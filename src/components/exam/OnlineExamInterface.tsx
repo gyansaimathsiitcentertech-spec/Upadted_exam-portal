@@ -371,12 +371,23 @@ export const OnlineExamInterface: React.FC = () => {
 
         if (isCorrect) {
           correct++;
-          marksAwarded = q.marksPositive;
+          marksAwarded = Number(q.marksPositive) || 4;
           calculatedScore += marksAwarded;
         } else {
           incorrect++;
-          marksAwarded = q.marksNegative;
-          calculatedScore += marksAwarded;
+          // Ensure negative mark is always subtracted (penalty <= 0)
+          let penalty = -1;
+          if (q.marksNegative !== undefined) {
+            penalty = q.marksNegative > 0 ? -q.marksNegative : q.marksNegative;
+          } else if (exam.negativeMarks !== undefined) {
+            penalty = exam.negativeMarks > 0 ? -exam.negativeMarks : exam.negativeMarks;
+          }
+          // Numerical questions with 0 negative marking
+          if (q.type === 'numerical' && q.marksNegative === 0) {
+            penalty = 0;
+          }
+          marksAwarded = penalty;
+          calculatedScore += penalty;
         }
       }
 

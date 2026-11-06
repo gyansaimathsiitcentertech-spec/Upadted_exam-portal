@@ -66,9 +66,9 @@ export const CreateQuestionModal: React.FC = () => {
         { id: 'opt-4', label: '(4)', text: 'Option D' }
       ],
       correctAnswer: correctAnswer === 'A' ? '(1)' : correctAnswer === 'B' ? '(2)' : correctAnswer === 'C' ? '(3)' : '(4)',
-      marksPositive: marksPositive || 4,
-      marksNegative: marksNegative || 1,
-      explanation: `Correct answer is Option ${correctAnswer}. Marks awarded: +${marksPositive}, penalty: -${marksNegative}.`
+      marksPositive: Number(marksPositive) || 4,
+      marksNegative: -Math.abs(Number(marksNegative) || 1),
+      explanation: `Correct answer is Option ${correctAnswer}. Marks awarded: +${marksPositive}, penalty: -${Math.abs(marksNegative)}.`
     };
 
     addQuestion(newQ);
