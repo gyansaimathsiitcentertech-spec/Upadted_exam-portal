@@ -1,0 +1,6 @@
+{
+  "name": "Gyansai Maths IIT Center – Test Portal",
+  "description": "Comprehensive test portal and examination management platform for Gyansai Maths IIT Center.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,1525 @@
+import {
+  InstituteSettings,
+  Batch,
+  Teacher,
+  Question,
+  ExamFolder,
+  Exam,
+  ExamAttempt,
+  User,
+  AttendanceRecord,
+  StudyMaterial,
+  NotificationItem,
+  Course,
+  TestSeries,
+  PaymentTransaction
+} from '../types';
+
+export const INITIAL_INSTITUTE_SETTINGS: InstituteSettings = {
+  instituteName: 'GYANSAI MATHS IIT CENTER',
+  tagline: 'Premier Institute for IIT-JEE (Main & Advanced), MHT-CET & Engineering Maths',
+  directorName: 'Prof. Taterao Kendre (KT Sir)',
+  directorDesignation: 'Founder & Head of Mathematics',
+  email: 'gyansaimathsiitcentertech@gmail.com',
+  phone: '+91 94227 18290',
+  whatsapp: '+91 94227 18290',
+  address: 'Plot No. 14, Near Maheshwari Bhavan, Osmanpura',
+  city: 'Chhatrapati Sambhajinagar (Aurangabad)',
+  state: 'Maharashtra',
+  pinCode: '431005',
+  website: 'https://gyansaimathsiitcenter.in',
+  defaultNegativeMarking: -1,
+  defaultPositiveMarking: 4,
+  defaultExamDurationMinutes: 180,
+  allowResultReviewImmediately: true,
+  watermarkRollNumber: true,
+  enforceFullScreenInExam: false,
+  academicYear: '2025-2026',
+  storageTag: '',
+  logoUrl: 'https://gyansaimathsiitcenter.co.in/sai.jpeg',
+  logoSizeW: '70',
+  logoSizeH: '70',
+  heroImageUrl: '',
+  heroTitle: '',
+  heroSubtitle: '',
+  primaryCTA: '',
+  secondaryCTA: '',
+  faviconUrl: 'https://gyansaimathsiitcenter.co.in/sai.jpeg',
+  primaryColor: '#002FA7',
+  upiId: 'ujjbb89311773007@ujjivan',
+  bankName: 'Ujjivan Small finance Bank',
+  accountNo: '4455120040000245',
+  ifsc: 'UJVN0004455',
+  upiQrCodeUrl: '',
+  youtube: '',
+  instagram: '',
+  twitter: '',
+  facebook: '',
+  metaTitle: 'Gyansai Maths IIT Center — JEE/NEET/MHT-CET Test Portal',
+  metaDescription: 'Online examination & learning platform for JEE Main, JEE Advanced, NEET and MHT-CET aspirants.',
+  googleAnalyticsId: 'G-XXXXXXXX',
+  adminPassword: 'admin123',
+};
+
+export const INITIAL_USERS: User[] = [
+  {
+    id: 'user-admin',
+    name: 'Prof. Taterao Kendre (KT Sir)',
+    email: 'admin@gyansaimaths.com',
+    role: 'admin',
+    phone: '+91 94227 18290',
+    rollNo: 'FACULTY-01',
+    joinedDate: '2009-06-15'
+  },
+  {
+    id: 'student-1',
+    name: 'Rahul Sharma',
+    email: 'rahul.sharma@gmail.com',
+    role: 'student',
+    phone: '+91 98234 56711',
+    rollNo: 'GMI-2025-0101',
+    batchId: 'batch-1',
+    batchName: 'JEE Advanced Super 30',
+    targetExam: 'JEE Advanced 2025',
+    joinedDate: '2024-04-10'
+  },
+  {
+    id: 'student-2',
+    name: 'Priya Patel',
+    email: 'priya.patel@gmail.com',
+    role: 'student',
+    phone: '+91 97654 32109',
+    rollNo: 'GMI-2025-0102',
+    batchId: 'batch-2',
+    batchName: 'JEE Main Target 2025',
+    targetExam: 'JEE Main 2025',
+    joinedDate: '2024-04-12'
+  },
+  {
+    id: 'student-3',
+    name: 'Amit Kendre',
+    email: 'amit.kendre@gmail.com',
+    role: 'student',
+    phone: '+91 94221 88392',
+    rollNo: 'GMI-2025-0103',
+    batchId: 'batch-1',
+    batchName: 'JEE Advanced Super 30',
+    targetExam: 'JEE Advanced 2025',
+    joinedDate: '2024-04-15'
+  },
+  {
+    id: 'student-4',
+    name: 'Sneha Kulkarni',
+    email: 'sneha.kulkarni@yahoo.com',
+    role: 'student',
+    phone: '+91 98901 23456',
+    rollNo: 'GMI-2025-0104',
+    batchId: 'batch-3',
+    batchName: 'MHT-CET Top Batch',
+    targetExam: 'MHT-CET 2025',
+    joinedDate: '2024-05-01'
+  },
+  {
+    id: 'student-5',
+    name: 'Rohan Deshmukh',
+    email: 'rohan.deshmukh@gmail.com',
+    role: 'student',
+    phone: '+91 99708 65432',
+    rollNo: 'GMI-2025-0105',
+    batchId: 'batch-4',
+    batchName: '11th Foundation IIT-JEE',
+    targetExam: 'JEE Advanced 2026',
+    joinedDate: '2024-06-20'
+  },
+  {
+    id: 'st-1',
+    name: 'Vasant nagwe',
+    username: 'g0370741843',
+    email: 'vasantnagwe@gmail.com',
+    role: 'student',
+    targetExam: '11th JEE',
+    rollNo: 'GMI-11-0370',
+    joinedDate: '2024-07-01'
+  },
+  {
+    id: 'st-2',
+    name: 'Eshwar Bharat Kharare',
+    username: 'eshwar2017',
+    email: 'eshwarkharare2008@gmail.com',
+    role: 'student',
+    targetExam: '12th JEE',
+    rollNo: 'GMI-12-2017',
+    joinedDate: '2024-07-05'
+  },
+  {
+    id: 'st-3',
+    name: 'huhff',
+    username: 'g4tggggvv',
+    email: 'huhff@student.gyansai.in',
+    role: 'student',
+    targetExam: '11th JEE',
+    rollNo: 'GMI-11-4821',
+    joinedDate: '2024-07-10'
+  },
+  {
+    id: 'st-4',
+    name: 'Snehal Navnath Dhakne 9',
+    username: 'g9764450662',
+    email: 'navnathdhakne37@gmail.com',
+    role: 'student',
+    targetExam: '12th MHT-CET',
+    rollNo: 'GMI-12-9764',
+    joinedDate: '2024-07-15'
+  },
+  {
+    id: 'st-5',
+    name: 'Viraj Vikrant Naik',
+    username: 'g6hbvvv',
+    email: 'virajnaik@gmail.com',
+    role: 'student',
+    targetExam: '11th JEE',
+    rollNo: 'GMI-11-6281',
+    joinedDate: '2024-07-20'
+  },
+  {
+    id: 'st-6',
+    name: 'Priyansh Jaiswal',
+    username: 'g9921880836',
+    email: 'priyanshjais20@gmail.com',
+    role: 'student',
+    targetExam: '11th JEE',
+    rollNo: 'GMI-11-9921',
+    joinedDate: '2024-07-25'
+  },
+  {
+    id: 'st-nbytd',
+    name: "'nbytdfghkj",
+    username: 'gnbytdfghkj',
+    email: 'nbytd@student.gyansai.in',
+    role: 'student',
+    targetExam: '12th JEE',
+    rollNo: 'GMI-12-8821',
+    joinedDate: '2024-08-01'
+  },
+  {
+    id: 'st-karan',
+    name: 'Karan veer',
+    username: 'gkaranveer',
+    email: 'karanveer@gmail.com',
+    role: 'student',
+    targetExam: '11th JEE',
+    rollNo: 'GMI-11-4412',
+    joinedDate: '2024-08-05'
+  },
+  {
+    id: 'st-anuraq',
+    name: 'Anuraq kailas lathe',
+    username: 'ganuraqlathe',
+    email: 'anuraqlathe@gmail.com',
+    role: 'student',
+    targetExam: '11th JEE',
+    rollNo: 'GMI-11-7729',
+    joinedDate: '2024-08-10'
+  }
+];
+
+export const INITIAL_BATCHES: Batch[] = [
+  {
+    id: 'batch-1',
+    name: 'JEE Advanced Super 30',
+    code: 'GMI-ADV-30',
+    targetExam: 'IIT-JEE Advanced 2025',
+    timing: '07:30 AM - 10:30 AM (Daily)',
+    startDate: '2024-04-15',
+    studentCount: 30,
+    assignedTeacherIds: ['teacher-1', 'teacher-2'],
+    status: 'Active',
+    description: 'Intensive problem-solving and rigorous test series for top 30 rank aspirants.'
+  },
+  {
+    id: 'batch-2',
+    name: 'JEE Main Target 2025',
+    code: 'GMI-MAIN-25',
+    targetExam: 'JEE Main (Jan & April)',
+    timing: '10:45 AM - 01:45 PM (Mon to Sat)',
+    startDate: '2024-04-20',
+    studentCount: 48,
+    assignedTeacherIds: ['teacher-1', 'teacher-3'],
+    status: 'Active',
+    description: 'Comprehensive syllabus coverage with 99+ percentile benchmark tests.'
+  },
+  {
+    id: 'batch-3',
+    name: 'MHT-CET Top Batch',
+    code: 'GMI-CET-100',
+    targetExam: 'MHT-CET Engineering 2025',
+    timing: '03:00 PM - 05:30 PM (Mon to Fri)',
+    startDate: '2024-05-02',
+    studentCount: 52,
+    assignedTeacherIds: ['teacher-4'],
+    status: 'Active',
+    description: 'Targeting 99.8+ percentile in Maharashtra CET with speed math shortcuts.'
+  },
+  {
+    id: 'batch-4',
+    name: '11th Foundation IIT-JEE',
+    code: 'GMI-FND-11',
+    targetExam: 'IIT-JEE 2026 Foundation',
+    timing: '06:00 PM - 08:30 PM (Mon to Sat)',
+    startDate: '2024-06-10',
+    studentCount: 42,
+    assignedTeacherIds: ['teacher-1', 'teacher-2', 'teacher-4'],
+    status: 'Active',
+    description: 'Building deep conceptual clarity in Advanced Algebra, Trigonometry, and Calculus.'
+  }
+];
+
+export const INITIAL_TEACHERS: Teacher[] = [
+  {
+    id: 'teacher-1',
+    name: 'Prof. Taterao Kendre (KT Sir)',
+    designation: 'Founder & Head of Mathematics',
+    subject: 'Higher Mathematics & IIT-JEE Specialist',
+    phone: '+91 94227 18290',
+    email: 'ktsir@gyansaimaths.com',
+    assignedBatchIds: ['batch-1', 'batch-2', 'batch-4'],
+    qualification: 'M.Sc. Mathematics, 16+ Years Experience in IIT-JEE Coaching',
+    status: 'Active'
+  },
+  {
+    id: 'teacher-2',
+    name: 'Prof. D. S. Sharma',
+    designation: 'Senior Faculty - Physics',
+    subject: 'Advanced Physics (Mechanics & Electrodynamics)',
+    phone: '+91 98220 44551',
+    email: 'sharma.physics@gyansaimaths.com',
+    assignedBatchIds: ['batch-1', 'batch-4'],
+    qualification: 'B.Tech IIT Bombay, 12+ Years Teaching Experience',
+    status: 'Active'
+  },
+  {
+    id: 'teacher-3',
+    name: 'Dr. Ananya Mukherjee',
+    designation: 'Senior Faculty - Chemistry',
+    subject: 'Physical & Organic Chemistry',
+    phone: '+91 94231 77880',
+    email: 'ananya.chem@gyansaimaths.com',
+    assignedBatchIds: ['batch-2'],
+    qualification: 'Ph.D. Chemistry, Former National Level Faculty',
+    status: 'Active'
+  },
+  {
+    id: 'teacher-4',
+    name: 'Prof. Rajesh Patil',
+    designation: 'Assistant Faculty - Mathematics',
+    subject: 'Coordinate Geometry & Vectors',
+    phone: '+91 98500 12345',
+    email: 'rajesh.patil@gyansaimaths.com',
+    assignedBatchIds: ['batch-3', 'batch-4'],
+    qualification: 'M.Sc. Applied Mathematics, 8 Years Experience',
+    status: 'Active'
+  }
+];
+
+export const INITIAL_EXAM_FOLDERS: ExamFolder[] = [
+  {
+    id: 'folder-1',
+    name: 'JEE Advanced Full Mocks 2025',
+    description: 'Paper 1 & Paper 2 comprehensive mocks matching latest IIT pattern',
+    examCount: 6,
+    category: 'JEE Advanced',
+    createdAt: '2024-09-01'
+  },
+  {
+    id: 'folder-2',
+    name: 'JEE Main Chapterwise Tests',
+    description: 'Focused chapterwise test series with speed analysis',
+    examCount: 14,
+    category: 'JEE Main',
+    createdAt: '2024-09-10'
+  },
+  {
+    id: 'folder-3',
+    name: 'Weekly Mathematics DPP & Quizzes',
+    description: 'Calculus, Vectors, Probability weekly revision test papers',
+    examCount: 18,
+    category: 'Foundation',
+    createdAt: '2024-10-01'
+  },
+  {
+    id: 'folder-4',
+    name: 'MHT-CET Full Syllabus Tests',
+    description: '100 Question speed tests with Maharashtra Board alignment',
+    examCount: 8,
+    category: 'MHT-CET',
+    createdAt: '2024-10-15'
+  },
+  {
+    id: 'folder-jee-mains',
+    name: 'JEE MAINS',
+    description: 'JEE Mains official pattern tests',
+    examCount: 22,
+    category: 'JEE Main',
+    createdAt: '2025-01-01'
+  },
+  {
+    id: 'folder-mhtcet',
+    name: 'MHTCET',
+    description: 'MHT-CET tests for engineering aspirants',
+    examCount: 15,
+    category: 'MHT-CET',
+    createdAt: '2025-01-02'
+  },
+  {
+    id: 'folder-addi',
+    name: 'addi',
+    description: 'addi topic tests',
+    examCount: 3,
+    category: 'JEE Main',
+    createdAt: '2025-01-03'
+  },
+  {
+    id: 'folder-jee',
+    name: 'JEE',
+    description: 'JEE comprehensive mocks',
+    examCount: 12,
+    category: 'JEE Main',
+    createdAt: '2025-01-04'
+  },
+  {
+    id: 'folder-jee-3',
+    name: 'Jee',
+    description: 'Jee special batch assessments',
+    examCount: 5,
+    category: 'JEE Main',
+    createdAt: '2025-01-05'
+  }
+];
+
+export const INITIAL_QUESTIONS: Question[] = [
+  {
+    id: 'q-1',
+    code: 'MATH-CALC-001',
+    subject: 'Mathematics',
+    topic: 'Definite Integration',
+    type: 'single_choice',
+    difficulty: 'Advanced IIT',
+    questionText: 'Evaluate the value of the definite integral: I = ∫ [0 to π/2] (sin³(x)) / (sin³(x) + cos³(x)) dx.',
+    formulaNote: 'Apply King\'s Rule: ∫[a to b] f(x) dx = ∫[a to b] f(a+b-x) dx',
+    options: [
+      { id: 'opt-1', label: 'A', text: 'π / 4' },
+      { id: 'opt-2', label: 'B', text: 'π / 2' },
+      { id: 'opt-3', label: 'C', text: 'π / 8' },
+      { id: 'opt-4', label: 'D', text: '1' }
+    ],
+    correctAnswer: 'A',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Using King\'s property, replace x by (π/2 - x). Then sin(π/2 - x) = cos(x) and cos(π/2 - x) = sin(x). Adding both integrals gives 2I = ∫ [0 to π/2] 1 dx = π/2. Therefore, I = π/4.',
+    createdAt: '2024-10-05'
+  },
+  {
+    id: 'q-2',
+    code: 'MATH-VEC-002',
+    subject: 'Mathematics',
+    topic: 'Vectors & 3D Geometry',
+    type: 'single_choice',
+    difficulty: 'Moderate',
+    questionText: 'Let a⃗, b⃗, c⃗ be unit vectors such that a⃗ + b⃗ + c⃗ = 0⃗. What is the value of the scalar product quantity (a⃗ · b⃗ + b⃗ · c⃗ + c⃗ · a⃗)?',
+    formulaNote: '|a⃗ + b⃗ + c⃗|² = |a⃗|² + |b⃗|² + |c⃗|² + 2(a⃗·b⃗ + b⃗·c⃗ + c⃗·a⃗)',
+    options: [
+      { id: 'opt-1', label: 'A', text: '3 / 2' },
+      { id: 'opt-2', label: 'B', text: '-3 / 2' },
+      { id: 'opt-3', label: 'C', text: '-1' },
+      { id: 'opt-4', label: 'D', text: '0' }
+    ],
+    correctAnswer: 'B',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Take the square of the magnitude: |a⃗ + b⃗ + c⃗|² = |0⃗|² = 0. Expanding gives |a⃗|² + |b⃗|² + |c⃗|² + 2(a⃗·b⃗ + b⃗·c⃗ + c⃗·a⃗) = 0. Since each is a unit vector, 1 + 1 + 1 + 2S = 0 => 2S = -3 => S = -3/2.',
+    createdAt: '2024-10-06'
+  },
+  {
+    id: 'q-3',
+    code: 'MATH-MAT-003',
+    subject: 'Mathematics',
+    topic: 'Matrices & Determinants',
+    type: 'numerical',
+    difficulty: 'Advanced IIT',
+    questionText: 'If A is a 3 × 3 matrix such that det(A) = 4, then find the value of det(2 · adj(A)).',
+    formulaNote: 'det(k · M) = kⁿ · det(M) for n×n matrix; det(adj(A)) = (det(A))^(n-1)',
+    options: [],
+    correctAnswer: '128',
+    marksPositive: 4,
+    marksNegative: 0,
+    explanation: 'Here n = 3. Using formula det(2 · adj(A)) = 2³ · det(adj(A)) = 8 · (det(A))^(3-1) = 8 · (4)² = 8 · 16 = 128.',
+    createdAt: '2024-10-08'
+  },
+  {
+    id: 'q-4',
+    code: 'MATH-DIFF-004',
+    subject: 'Mathematics',
+    topic: 'Differential Equations',
+    type: 'single_choice',
+    difficulty: 'Moderate',
+    questionText: 'Find the integrating factor (I.F.) for the linear differential equation: (dy/dx) + (2x / (1 + x²)) y = (1 / (1 + x²)²).',
+    formulaNote: 'I.F. = e^(∫ P dx)',
+    options: [
+      { id: 'opt-1', label: 'A', text: '1 + x²' },
+      { id: 'opt-2', label: 'B', text: 'ln(1 + x²)' },
+      { id: 'opt-3', label: 'C', text: '1 / (1 + x²)' },
+      { id: 'opt-4', label: 'D', text: 'e^(1 + x²)' }
+    ],
+    correctAnswer: 'A',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Here P(x) = 2x / (1 + x²). Then ∫ P(x) dx = ln(1 + x²). Thus, I.F. = e^(ln(1 + x²)) = 1 + x².',
+    createdAt: '2024-10-10'
+  },
+  {
+    id: 'q-5',
+    code: 'MATH-PROB-005',
+    subject: 'Mathematics',
+    topic: 'Probability & Permutations',
+    type: 'single_choice',
+    difficulty: 'Advanced IIT',
+    questionText: 'A biased coin with probability of heads p = 2/3 is tossed 5 times independently. What is the probability of getting exactly 3 heads?',
+    formulaNote: 'Binomial Probability P(X=r) = ⁿCᵣ · pʳ · qⁿ⁻ʳ',
+    options: [
+      { id: 'opt-1', label: 'A', text: '40 / 243' },
+      { id: 'opt-2', label: 'B', text: '80 / 243' },
+      { id: 'opt-3', label: 'C', text: '64 / 243' },
+      { id: 'opt-4', label: 'D', text: '32 / 243' }
+    ],
+    correctAnswer: 'B',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'P(X = 3) = ⁵C₃ · (2/3)³ · (1/3)² = 10 · (8/27) · (1/9) = 80 / 243.',
+    createdAt: '2024-10-12'
+  },
+  {
+    id: 'q-6',
+    code: 'PHYS-ROT-006',
+    subject: 'Physics',
+    topic: 'Rotational Motion',
+    type: 'single_choice',
+    difficulty: 'Moderate',
+    questionText: 'A solid sphere and a hollow cylinder of equal mass and radius roll down an inclined plane from rest without slipping. Which reaches the bottom first?',
+    options: [
+      { id: 'opt-1', label: 'A', text: 'Solid sphere' },
+      { id: 'opt-2', label: 'B', text: 'Hollow cylinder' },
+      { id: 'opt-3', label: 'C', text: 'Both reach simultaneously' },
+      { id: 'opt-4', label: 'D', text: 'Depends on the angle of inclination' }
+    ],
+    correctAnswer: 'A',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Acceleration on an incline without slipping is a = g sin(θ) / (1 + k²/R²). For a solid sphere, k²/R² = 2/5 = 0.4. For a hollow cylinder, k²/R² = 1. Smaller moment factor gives larger acceleration, so the solid sphere accelerates faster and reaches first.',
+    createdAt: '2024-10-14'
+  },
+  {
+    id: 'q-7',
+    code: 'CHEM-BOND-007',
+    subject: 'Chemistry',
+    topic: 'Chemical Bonding',
+    type: 'single_choice',
+    difficulty: 'Easy',
+    questionText: 'Which of the following molecules has a square planar geometry according to VSEPR theory?',
+    options: [
+      { id: 'opt-1', label: 'A', text: 'XeF₄' },
+      { id: 'opt-2', label: 'B', text: 'CH₄' },
+      { id: 'opt-3', label: 'C', text: 'SF₄' },
+      { id: 'opt-4', label: 'D', text: 'BF₄⁻' }
+    ],
+    correctAnswer: 'A',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'XeF₄ has 4 bond pairs and 2 lone pairs on the central Xenon atom (steric number = 6, sp³d² hybridization). The two lone pairs reside in axial positions to minimize repulsions, leaving a square planar geometry.',
+    createdAt: '2024-10-16'
+  },
+  {
+    id: 'q-8',
+    code: 'MATH-CONIC-008',
+    subject: 'Mathematics',
+    topic: 'Conic Sections - Parabola',
+    type: 'numerical',
+    difficulty: 'Advanced IIT',
+    questionText: 'Find the length of the focal chord of the parabola y² = 16x which makes an angle of 60° with the positive x-axis.',
+    formulaNote: 'Length of focal chord inclined at angle θ is L = 4a · cosec²(θ)',
+    options: [],
+    correctAnswer: '21.33',
+    marksPositive: 4,
+    marksNegative: 0,
+    explanation: 'For y² = 16x, 4a = 16 => a = 4. The length of focal chord inclined at angle θ is L = 4a · cosec²(θ) = 16 · cosec²(60°) = 16 · (2/√3)² = 16 · 4/3 = 64/3 ≈ 21.33.',
+    createdAt: '2024-10-18'
+  },
+  {
+    id: 'q-math-2019',
+    code: 'JEE-2019-VEC',
+    subject: 'Mathematics',
+    topic: 'Vectors & 3D Geometry',
+    type: 'single_choice',
+    difficulty: 'Moderate',
+    tag: 'JEE',
+    year: '[2019]',
+    questionText: 'Let a = i + 2j + 4k, b = i + λj + 4k and c = 2i + 4j + (λ² - 1)k be coplanar vectors. Then the non-zero vector a × c is',
+    options: [
+      { id: 'opt-1', label: '(1)', text: '-14i - 5j' },
+      { id: 'opt-2', label: '(2)', text: '-10i - 5j' },
+      { id: 'opt-3', label: '(3)', text: '-14i + 5j' },
+      { id: 'opt-4', label: '(4)', text: '-10i + 5j' }
+    ],
+    correctAnswer: '(2)',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Since a, b, c are coplanar, [a b c] = 0. Solving the determinant yields λ = -1 or 2. Since vector is non-zero, calculate cross product a × c.',
+    createdAt: '2024-10-19'
+  },
+  {
+    id: 'q-math-2021',
+    code: 'JEE-2021-DIFF',
+    subject: 'Mathematics',
+    topic: 'Differential Equations',
+    type: 'single_choice',
+    difficulty: 'Moderate',
+    tag: 'JEE',
+    year: '[2021]',
+    questionText: 'The differential equation satisfied by the system of parabolas y² = 4a(x + a) is:',
+    options: [
+      { id: 'opt-1', label: '(1)', text: 'y(dy/dx)² - 2x(dy/dx) - y = 0' },
+      { id: 'opt-2', label: '(2)', text: 'y(dy/dx)² - 2x(dy/dx) + y = 0' },
+      { id: 'opt-3', label: '(3)', text: 'y(dy/dx)² + 2x(dy/dx) - y = 0' },
+      { id: 'opt-4', label: '(4)', text: 'y(dy/dx)² + 2x(dy/dx) + y = 0' }
+    ],
+    correctAnswer: '(1)',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Differentiating y² = 4ax + 4a² gives 2y(y\') = 4a => a = (y·y\')/2. Substitute a back into the original parabola equation to eliminate parameter a.',
+    createdAt: '2024-10-20'
+  },
+  {
+    id: 'q-math-2022',
+    code: 'JEE-2022-AREA',
+    subject: 'Mathematics',
+    topic: 'Area Under Curves',
+    type: 'single_choice',
+    difficulty: 'Moderate',
+    tag: 'JEE',
+    year: '[2022]',
+    questionText: 'The area of the region bounded by y² = 8x and y² = 16(3 - x) is equal to',
+    options: [
+      { id: 'opt-1', label: '(1)', text: '32/3' },
+      { id: 'opt-2', label: '(2)', text: '40' },
+      { id: 'opt-3', label: '(3)', text: '16' },
+      { id: 'opt-4', label: '(4)', text: '19' }
+    ],
+    correctAnswer: '(3)',
+    marksPositive: 4,
+    marksNegative: -1,
+    explanation: 'Find points of intersection: 8x = 48 - 16x => 24x = 48 => x = 2. Then y² = 16 => y = ±4. Integrate with respect to y: Area = 2 ∫[0 to 4] ((3 - y²/16) - (y²/8)) dy = 16.',
+    createdAt: '2024-10-21'
+  }
+];
+
+export const INITIAL_EXAMS: Exam[] = [
+  {
+    id: 'exam-1',
+    title: 'JEE Advanced Mock Test 01 - Mathematics & Science',
+    code: 'GYAN-IIT-2025-01',
+    folderId: 'folder-1',
+    folderName: 'JEE Advanced Full Mocks 2025',
+    batchIds: ['batch-1', 'batch-2'],
+    durationMinutes: 180,
+    totalMarks: 32,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Mathematics - Section A (SCQ & Numerical)',
+        subject: 'Mathematics',
+        questionIds: ['q-1', 'q-2', 'q-3', 'q-4', 'q-5', 'q-8'],
+        instructions: '+4 for correct, -1 for incorrect in SCQ. Numerical questions have no negative marking.'
+      },
+      {
+        id: 'sec-2',
+        name: 'Physics & Chemistry Core Section',
+        subject: 'General Science',
+        questionIds: ['q-6', 'q-7'],
+        instructions: 'Single correct answer questions.'
+      }
+    ],
+    startTime: '2025-01-10T09:00',
+    endTime: '2025-06-30T23:59',
+    status: 'Active',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-IIT-2025-01',
+    instructions: [
+      'The examination contains 2 sections: Mathematics and Physics/Chemistry.',
+      'For Single Choice Questions: +4 marks for correct response, -1 mark for wrong response.',
+      'For Numerical Value Questions: +4 marks for correct response, 0 marks for wrong response.',
+      'Use the question palette on the right to navigate between questions.',
+      'Click "Save & Next" to save your response and move to the next question.',
+      'Do not refresh or close the browser window during the test.'
+    ],
+    createdAt: '2024-10-20',
+    passPercentage: 40
+  },
+  {
+    id: 'exam-2',
+    title: 'Definite Integration & Differential Equations Unit Test',
+    code: 'GYAN-MATH-04',
+    folderId: 'folder-2',
+    folderName: 'JEE Main Chapterwise Tests',
+    batchIds: ['batch-1', 'batch-2', 'batch-4'],
+    durationMinutes: 60,
+    totalMarks: 16,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Calculus Mastery Section',
+        subject: 'Mathematics',
+        questionIds: ['q-1', 'q-4', 'q-3', 'q-8'],
+        instructions: 'Test your analytical depth in integral calculus and differential equations.'
+      }
+    ],
+    startTime: '2025-01-15T10:00',
+    endTime: '2025-07-15T23:59',
+    status: 'Active',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-MATH-04',
+    instructions: [
+      'Duration: 60 Minutes.',
+      'All questions are compulsory.',
+      '+4 for correct answer, -1 for negative marking.'
+    ],
+    createdAt: '2024-10-25',
+    passPercentage: 45
+  },
+  {
+    id: 'exam-3',
+    title: 'Vectors & 3D Geometry Speed Test',
+    code: 'GYAN-MATH-05',
+    folderId: 'folder-3',
+    folderName: 'Weekly Mathematics DPP & Quizzes',
+    batchIds: ['batch-1', 'batch-4'],
+    durationMinutes: 45,
+    totalMarks: 12,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Vectors & 3D Geometry',
+        subject: 'Mathematics',
+        questionIds: ['q-2', 'q-8', 'q-5'],
+        instructions: 'Speed test - focus on accuracy within tight time constraint.'
+      }
+    ],
+    startTime: '2025-02-01T08:00',
+    endTime: '2025-08-01T23:59',
+    status: 'Active',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-MATH-05',
+    instructions: [
+      'Weekly DPP speed assessment for classroom students.',
+      'Negative marks applicable.'
+    ],
+    createdAt: '2024-11-01',
+    passPercentage: 50
+  },
+  {
+    id: 'exam-4',
+    title: 'MHT-CET Full Length Simulation Test',
+    code: 'GYAN-CET-02',
+    folderId: 'folder-4',
+    folderName: 'MHT-CET Full Syllabus Tests',
+    batchIds: ['batch-3'],
+    durationMinutes: 90,
+    totalMarks: 16,
+    positiveMarks: 2,
+    negativeMarks: 0,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Mathematics Section',
+        subject: 'Mathematics',
+        questionIds: ['q-1', 'q-2', 'q-4', 'q-6'],
+        instructions: 'No negative marking in MHT-CET standard pattern.'
+      }
+    ],
+    startTime: '2025-02-15T14:00',
+    endTime: '2025-08-15T23:59',
+    status: 'Active',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-CET-02',
+    instructions: [
+      'Standard Maharashtra State CET format.',
+      'Each question carries 2 marks. No negative marks.'
+    ],
+    createdAt: '2024-11-02',
+    passPercentage: 50
+  },
+  {
+    id: 'exam-addi',
+    title: 'addi',
+    code: 'GYAN-ADDI-01',
+    folderId: 'folder-addi',
+    folderName: 'addi (0 questions)',
+    batchIds: [],
+    targetClass: '11th',
+    durationMinutes: 60,
+    totalMarks: 0,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [],
+    startTime: '2025-01-01T09:00',
+    endTime: '2025-12-31T23:59',
+    status: 'Live',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-ADDI-01',
+    instructions: ['General instructions for addi test.'],
+    createdAt: '2025-01-01',
+    passPercentage: 40
+  },
+  {
+    id: 'exam-jee-mock',
+    title: 'JEE',
+    code: 'GYAN-JEE-MAIN-01',
+    folderId: 'folder-jee',
+    folderName: 'JEE (0 questions)',
+    batchIds: [],
+    targetClass: '11th',
+    durationMinutes: 60,
+    totalMarks: 100,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Mathematics',
+        subject: 'Mathematics',
+        questionIds: ['q-math-2019', 'q-math-2021', 'q-math-2022', 'q-1', 'q-2', 'q-3', 'q-4', 'q-5']
+      }
+    ],
+    startTime: '2025-01-01T09:00',
+    endTime: '2025-12-31T23:59',
+    status: 'Live',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-JEE-MAIN-01',
+    instructions: ['JEE standard test: 60 minutes, +4/-1 marking.'],
+    createdAt: '2025-01-02',
+    passPercentage: 40
+  },
+  {
+    id: 'exam-jee-3',
+    title: 'Jee',
+    code: 'GYAN-JEE-03',
+    folderId: 'folder-jee-3',
+    folderName: 'Jee (0 questions)',
+    batchIds: [],
+    targetClass: '11th',
+    durationMinutes: 60,
+    totalMarks: 0,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [],
+    startTime: '2025-01-01T09:00',
+    endTime: '2025-12-31T23:59',
+    status: 'Live',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-JEE-03',
+    instructions: ['Jee 60 minutes assessment.'],
+    createdAt: '2025-01-03',
+    passPercentage: 40
+  },
+  {
+    id: 'exam-jee-p2',
+    title: 'Full jeemains paper 2',
+    code: 'GYAN-JEE-P2',
+    folderId: 'folder-jee-p2',
+    folderName: 'Full jeemains paper 2 (25 questions)',
+    batchIds: [],
+    targetClass: '11th',
+    durationMinutes: 60,
+    totalMarks: 100,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'JEE Mains Paper 2',
+        subject: 'Mathematics',
+        questionIds: ['q-1', 'q-2', 'q-4', 'q-8', 'q-math-2019', 'q-math-2021', 'q-math-2022']
+      }
+    ],
+    startTime: '2025-01-01T09:00',
+    endTime: '2025-12-31T23:59',
+    status: 'Live',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-JEE-P2',
+    instructions: ['Full JEE Mains Paper 2 with 25 questions format.'],
+    createdAt: '2025-01-04',
+    passPercentage: 40
+  },
+  {
+    id: 'exam-jee-p1',
+    title: 'Full jee main paper1',
+    code: 'GYAN-JEE-P1',
+    folderId: 'folder-jee-p1',
+    folderName: 'Full jee main paper1 (27 questions)',
+    batchIds: [],
+    targetClass: '11th',
+    durationMinutes: 60,
+    totalMarks: 108,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'JEE Mains Paper 1',
+        subject: 'Mathematics',
+        questionIds: ['q-1', 'q-2', 'q-3', 'q-5', 'q-6', 'q-7', 'q-8', 'q-math-2021', 'q-math-2022']
+      }
+    ],
+    startTime: '2026-10-15T13:31:00',
+    endTime: '2026-12-31T23:59:00',
+    status: 'Live',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-JEE-P1',
+    instructions: ['Full JEE Main Paper 1 with 27 questions.'],
+    createdAt: '2025-01-05',
+    passPercentage: 40
+  },
+  {
+    id: 'exam-algebra',
+    title: 'Jee exam algebra',
+    code: 'GYAN-JEE-ALG',
+    folderId: 'folder-algebra',
+    folderName: 'Jee exam algebra (25 questions)',
+    batchIds: [],
+    targetClass: '12th',
+    durationMinutes: 60,
+    totalMarks: 100,
+    positiveMarks: 4,
+    negativeMarks: -1,
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Algebra Section',
+        subject: 'Mathematics',
+        questionIds: ['q-3', 'q-5', 'q-8', 'q-math-2022', 'q-1']
+      }
+    ],
+    startTime: '2026-10-15T08:59:00',
+    endTime: '2026-12-31T23:59:00',
+    status: 'Live',
+    isPublic: true,
+    publicAccessUrl: 'https://ais-dev-f7jpkmgt4fqk7n2ogmc4x2-740969633609.asia-southeast1.run.app/?exam=GYAN-JEE-ALG',
+    instructions: ['Jee exam algebra: Polynomials, Quadratic equations, Complex numbers, Matrices.'],
+    createdAt: '2025-01-06',
+    passPercentage: 40
+  }
+];
+
+export const INITIAL_ATTEMPTS: ExamAttempt[] = [
+  {
+    id: 'att-1',
+    examId: 'exam-1',
+    examTitle: 'JEE Advanced Mock Test 01 - Mathematics & Science',
+    examCode: 'GYAN-IIT-2025-01',
+    studentId: 'student-1',
+    studentName: 'Rahul Sharma',
+    studentRollNo: 'GMI-2025-0101',
+    studentEmail: 'rahul.sharma@gmail.com',
+    answers: {
+      'q-1': { questionId: 'q-1', selectedOption: 'A', status: 'answered', timeSpentSeconds: 120, isCorrect: true, marksAwarded: 4 },
+      'q-2': { questionId: 'q-2', selectedOption: 'B', status: 'answered', timeSpentSeconds: 140, isCorrect: true, marksAwarded: 4 },
+      'q-3': { questionId: 'q-3', selectedOption: '128', status: 'answered', timeSpentSeconds: 210, isCorrect: true, marksAwarded: 4 },
+      'q-4': { questionId: 'q-4', selectedOption: 'A', status: 'answered', timeSpentSeconds: 95, isCorrect: true, marksAwarded: 4 },
+      'q-5': { questionId: 'q-5', selectedOption: 'B', status: 'answered', timeSpentSeconds: 180, isCorrect: true, marksAwarded: 4 },
+      'q-6': { questionId: 'q-6', selectedOption: 'A', status: 'answered', timeSpentSeconds: 90, isCorrect: true, marksAwarded: 4 },
+      'q-7': { questionId: 'q-7', selectedOption: 'A', status: 'answered', timeSpentSeconds: 60, isCorrect: true, marksAwarded: 4 },
+      'q-8': { questionId: 'q-8', selectedOption: '21.33', status: 'answered', timeSpentSeconds: 240, isCorrect: true, marksAwarded: 4 }
+    },
+    totalScore: 32,
+    maxScore: 32,
+    percentage: 100,
+    accuracy: 100,
+    correctCount: 8,
+    incorrectCount: 0,
+    unattemptedCount: 0,
+    rank: 1,
+    totalParticipants: 4,
+    startedAt: '2025-01-11T09:05:00',
+    submittedAt: '2025-01-11T11:45:00',
+    timeTakenMinutes: 160,
+    status: 'Evaluated'
+  },
+  {
+    id: 'att-2',
+    examId: 'exam-1',
+    examTitle: 'JEE Advanced Mock Test 01 - Mathematics & Science',
+    examCode: 'GYAN-IIT-2025-01',
+    studentId: 'student-2',
+    studentName: 'Priya Patel',
+    studentRollNo: 'GMI-2025-0102',
+    studentEmail: 'priya.patel@gmail.com',
+    answers: {
+      'q-1': { questionId: 'q-1', selectedOption: 'A', status: 'answered', timeSpentSeconds: 130, isCorrect: true, marksAwarded: 4 },
+      'q-2': { questionId: 'q-2', selectedOption: 'A', status: 'answered', timeSpentSeconds: 160, isCorrect: false, marksAwarded: -1 },
+      'q-3': { questionId: 'q-3', selectedOption: '128', status: 'answered', timeSpentSeconds: 240, isCorrect: true, marksAwarded: 4 },
+      'q-4': { questionId: 'q-4', selectedOption: 'A', status: 'answered', timeSpentSeconds: 110, isCorrect: true, marksAwarded: 4 },
+      'q-5': { questionId: 'q-5', selectedOption: 'A', status: 'answered', timeSpentSeconds: 190, isCorrect: false, marksAwarded: -1 },
+      'q-6': { questionId: 'q-6', selectedOption: 'A', status: 'answered', timeSpentSeconds: 85, isCorrect: true, marksAwarded: 4 },
+      'q-7': { questionId: 'q-7', selectedOption: 'A', status: 'answered', timeSpentSeconds: 70, isCorrect: true, marksAwarded: 4 },
+      'q-8': { questionId: 'q-8', selectedOption: '', status: 'not_answered', timeSpentSeconds: 40, isCorrect: false, marksAwarded: 0 }
+    },
+    totalScore: 18,
+    maxScore: 32,
+    percentage: 56.25,
+    accuracy: 71.4,
+    correctCount: 5,
+    incorrectCount: 2,
+    unattemptedCount: 1,
+    rank: 2,
+    totalParticipants: 4,
+    startedAt: '2025-01-11T09:10:00',
+    submittedAt: '2025-01-11T12:00:00',
+    timeTakenMinutes: 170,
+    status: 'Evaluated'
+  },
+  {
+    id: 'att-3',
+    examId: 'exam-1',
+    examTitle: 'JEE Advanced Mock Test 01 - Mathematics & Science',
+    examCode: 'GYAN-IIT-2025-01',
+    studentId: 'student-3',
+    studentName: 'Amit Kendre',
+    studentRollNo: 'GMI-2025-0103',
+    studentEmail: 'amit.kendre@gmail.com',
+    answers: {
+      'q-1': { questionId: 'q-1', selectedOption: 'A', status: 'answered', timeSpentSeconds: 140, isCorrect: true, marksAwarded: 4 },
+      'q-2': { questionId: 'q-2', selectedOption: 'B', status: 'answered', timeSpentSeconds: 150, isCorrect: true, marksAwarded: 4 },
+      'q-3': { questionId: 'q-3', selectedOption: '64', status: 'answered', timeSpentSeconds: 220, isCorrect: false, marksAwarded: 0 },
+      'q-4': { questionId: 'q-4', selectedOption: 'B', status: 'answered', timeSpentSeconds: 130, isCorrect: false, marksAwarded: -1 },
+      'q-5': { questionId: 'q-5', selectedOption: 'B', status: 'answered', timeSpentSeconds: 160, isCorrect: true, marksAwarded: 4 },
+      'q-6': { questionId: 'q-6', selectedOption: 'B', status: 'answered', timeSpentSeconds: 110, isCorrect: false, marksAwarded: -1 },
+      'q-7': { questionId: 'q-7', selectedOption: 'A', status: 'answered', timeSpentSeconds: 90, isCorrect: true, marksAwarded: 4 },
+      'q-8': { questionId: 'q-8', selectedOption: '', status: 'not_answered', timeSpentSeconds: 50, isCorrect: false, marksAwarded: 0 }
+    },
+    totalScore: 14,
+    maxScore: 32,
+    percentage: 43.75,
+    accuracy: 66.7,
+    correctCount: 4,
+    incorrectCount: 2,
+    unattemptedCount: 2,
+    rank: 3,
+    totalParticipants: 4,
+    startedAt: '2025-01-11T09:20:00',
+    submittedAt: '2025-01-11T12:10:00',
+    timeTakenMinutes: 170,
+    status: 'Evaluated'
+  },
+  {
+    id: 'att-vasant',
+    examId: 'exam-jee-mock',
+    examTitle: 'JEE',
+    examCode: 'GYAN-JEE-MAIN-01',
+    studentId: 'st-1',
+    studentName: 'Vasant nagwe',
+    studentRollNo: 'GMI-11-0370',
+    studentEmail: 'vasantnagwe@gmail.com',
+    answers: {},
+    totalScore: 14,
+    maxScore: 100,
+    percentage: 14,
+    accuracy: 30,
+    correctCount: 4,
+    incorrectCount: 2,
+    unattemptedCount: 19,
+    rank: 1,
+    totalParticipants: 3,
+    startedAt: '2026-10-28T09:01:30',
+    submittedAt: '2026-10-28 09:03:18',
+    timeTakenMinutes: 2,
+    status: 'Evaluated',
+    tabSwitches: '1/30 · 1 alerts',
+    snapshots: 3,
+    violations: [{ time: '09:31:37', text: 'tab switch' }]
+  },
+  {
+    id: 'att-eshwar',
+    examId: 'exam-jee-mock',
+    examTitle: 'JEE',
+    examCode: 'GYAN-JEE-MAIN-01',
+    studentId: 'st-2',
+    studentName: 'Eshwar Bharat Kharare',
+    studentRollNo: 'GMI-12-2017',
+    studentEmail: 'eshwarkharare2008@gmail.com',
+    answers: {},
+    totalScore: 12,
+    maxScore: 100,
+    percentage: 12,
+    accuracy: 25,
+    correctCount: 3,
+    incorrectCount: 1,
+    unattemptedCount: 21,
+    rank: 2,
+    totalParticipants: 3,
+    startedAt: '2026-10-26T11:22:31',
+    submittedAt: '2026-10-26 11:28:21',
+    timeTakenMinutes: 6,
+    status: 'Evaluated',
+    tabSwitches: '13/30 · 13 alerts',
+    snapshots: 2,
+    violations: [{ time: '11:20:10', text: 'tab switch' }]
+  },
+  {
+    id: 'att-huhff',
+    examId: 'exam-jee-mock',
+    examTitle: 'JEE',
+    examCode: 'GYAN-JEE-MAIN-01',
+    studentId: 'st-3',
+    studentName: 'huhff',
+    studentRollNo: 'GMI-11-4821',
+    studentEmail: 'huhff@student.gyansai.in',
+    answers: {},
+    totalScore: -1,
+    maxScore: 100,
+    percentage: 0,
+    accuracy: 10,
+    correctCount: 0,
+    incorrectCount: 1,
+    unattemptedCount: 24,
+    rank: 3,
+    totalParticipants: 3,
+    startedAt: '2026-10-26T11:05:12',
+    submittedAt: '2026-10-26 11:12:22',
+    timeTakenMinutes: 7,
+    status: 'Evaluated',
+    tabSwitches: '1/30 · 1 alerts',
+    snapshots: 1,
+    violations: []
+  },
+  {
+    id: 'att-viraj',
+    examId: 'exam-jee-ellipse',
+    examTitle: '11jeemains ellipse paper2',
+    examCode: 'GYAN-ELLIPSE-02',
+    studentId: 'st-5',
+    studentName: 'Viraj Vikrant Naik',
+    studentRollNo: 'GMI-11-6281',
+    studentEmail: 'virajnaik@gmail.com',
+    answers: {},
+    totalScore: 88,
+    maxScore: 104,
+    percentage: 84.6,
+    accuracy: 85,
+    correctCount: 22,
+    incorrectCount: 2,
+    unattemptedCount: 2,
+    rank: 1,
+    totalParticipants: 15,
+    startedAt: '2026-10-15T15:42:00',
+    submittedAt: '2026-10-15 16:42:27',
+    timeTakenMinutes: 60,
+    status: 'Evaluated',
+    tabSwitches: '0/30 · 2 alerts',
+    snapshots: 4,
+    violations: []
+  },
+  {
+    id: 'att-nbytd',
+    examId: 'exam-12th-algebra',
+    examTitle: '12TH JEE Exam Algebra',
+    examCode: 'GYAN-ALG-12',
+    studentId: 'st-nbytd',
+    studentName: "'nbytdfghkj",
+    studentRollNo: 'GMI-12-8821',
+    studentEmail: 'nbytd@student.gyansai.in',
+    answers: {},
+    totalScore: 0,
+    maxScore: 100,
+    percentage: 0,
+    accuracy: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+    unattemptedCount: 25,
+    rank: 10,
+    totalParticipants: 10,
+    startedAt: '2026-10-15T14:00:00',
+    submittedAt: '2026-10-15 14:16:41',
+    timeTakenMinutes: 16,
+    status: 'Evaluated',
+    tabSwitches: '8/30 · 8 alerts',
+    snapshots: 2,
+    violations: [{ time: '14:05:12', text: 'tab switch' }]
+  },
+  {
+    id: 'att-priyansh',
+    examId: 'exam-jee-trig',
+    examTitle: 'Jeemains trigonometry 11paper1',
+    examCode: 'GYAN-TRIG-01',
+    studentId: 'st-6',
+    studentName: 'Priyansh Jaiswal',
+    studentRollNo: 'GMI-11-9921',
+    studentEmail: 'priyanshjais20@gmail.com',
+    answers: {},
+    totalScore: 5,
+    maxScore: 100,
+    percentage: 5,
+    accuracy: 18,
+    correctCount: 2,
+    incorrectCount: 3,
+    unattemptedCount: 20,
+    rank: 6,
+    totalParticipants: 12,
+    startedAt: '2026-10-15T12:36:00',
+    submittedAt: '2026-10-15 13:36:22',
+    timeTakenMinutes: 60,
+    status: 'Evaluated',
+    tabSwitches: '5/30 · 5 alerts',
+    snapshots: 3,
+    violations: []
+  },
+  {
+    id: 'att-karan',
+    examId: 'exam-jee-ellipse',
+    examTitle: '11jeemains ellipse paper2',
+    examCode: 'GYAN-ELLIPSE-02',
+    studentId: 'st-karan',
+    studentName: 'Karan veer',
+    studentRollNo: 'GMI-11-4412',
+    studentEmail: 'karanveer@gmail.com',
+    answers: {},
+    totalScore: 35,
+    maxScore: 104,
+    percentage: 33.6,
+    accuracy: 42,
+    correctCount: 9,
+    incorrectCount: 1,
+    unattemptedCount: 16,
+    rank: 5,
+    totalParticipants: 15,
+    startedAt: '2026-10-15T11:00:00',
+    submittedAt: '2026-10-15 11:55:04',
+    timeTakenMinutes: 55,
+    status: 'Evaluated',
+    tabSwitches: '4/30 · 4 alerts',
+    snapshots: 3,
+    violations: []
+  },
+  {
+    id: 'att-anuraq',
+    examId: 'exam-jee-ellipse',
+    examTitle: '11jeemains ellipse paper2',
+    examCode: 'GYAN-ELLIPSE-02',
+    studentId: 'st-anuraq',
+    studentName: 'Anuraq kailas lathe',
+    studentRollNo: 'GMI-11-7729',
+    studentEmail: 'anuraqlathe@gmail.com',
+    answers: {},
+    totalScore: 41,
+    maxScore: 104,
+    percentage: 39.4,
+    accuracy: 48,
+    correctCount: 11,
+    incorrectCount: 3,
+    unattemptedCount: 12,
+    rank: 4,
+    totalParticipants: 15,
+    startedAt: '2026-10-15T10:45:00',
+    submittedAt: '2026-10-15 11:15:57',
+    timeTakenMinutes: 30,
+    status: 'Evaluated',
+    tabSwitches: '30/30 · 30 alerts',
+    snapshots: 3,
+    violations: [{ time: '11:10:45', text: 'tab switch' }]
+  }
+];
+
+export const INITIAL_ATTENDANCE: AttendanceRecord[] = [
+  {
+    id: 'att-rec-1',
+    batchId: 'batch-1',
+    date: '2025-02-01',
+    records: [
+      { studentId: 'student-1', studentName: 'Rahul Sharma', rollNo: 'GMI-2025-0101', status: 'Present' },
+      { studentId: 'student-3', studentName: 'Amit Kendre', rollNo: 'GMI-2025-0103', status: 'Present' }
+    ]
+  },
+  {
+    id: 'att-rec-2',
+    batchId: 'batch-2',
+    date: '2025-02-01',
+    records: [
+      { studentId: 'student-2', studentName: 'Priya Patel', rollNo: 'GMI-2025-0102', status: 'Present' }
+    ]
+  }
+];
+
+export const INITIAL_STUDY_MATERIAL: StudyMaterial[] = [
+  {
+    id: 'mat-1',
+    title: 'Calculus Hand-written Classroom Notes by KT Sir',
+    subject: 'Mathematics',
+    topic: 'Differential & Integral Calculus',
+    batchIds: ['batch-1', 'batch-2', 'batch-4'],
+    fileType: 'Notes',
+    fileSize: '14.2 MB',
+    uploadedAt: '2024-11-15',
+    downloadCount: 148,
+    url: '#',
+    description: 'Comprehensive handwritten step-by-step notes covering standard tricks, shortcuts & graph transformations.'
+  },
+  {
+    id: 'mat-2',
+    title: 'IIT-JEE Mathematics Complete Formula Book & Cheat-sheet',
+    subject: 'Mathematics',
+    topic: 'All Algebra, Trigonometry & Geometry Formulas',
+    batchIds: ['batch-1', 'batch-2', 'batch-3', 'batch-4'],
+    fileType: 'Formula Sheet',
+    fileSize: '5.8 MB',
+    uploadedAt: '2024-11-20',
+    downloadCount: 312,
+    url: '#',
+    description: 'Quick revision formulas, coordinate formulas, binomial identities, and integration reduction formulas.'
+  },
+  {
+    id: 'mat-3',
+    title: 'DPP-04: Vectors & 3D Straight Lines High-Difficulty Problems',
+    subject: 'Mathematics',
+    topic: 'Vectors & 3D Coordinate Geometry',
+    batchIds: ['batch-1'],
+    fileType: 'DPP',
+    fileSize: '2.4 MB',
+    uploadedAt: '2024-12-01',
+    downloadCount: 89,
+    url: '#',
+    description: 'Daily Practice Problem sheet with 25 hand-picked subjective and multi-correct questions.'
+  },
+  {
+    id: 'mat-4',
+    title: 'Rotational Mechanics & Rigid Body Dynamics Master Notes',
+    subject: 'Physics',
+    topic: 'Rotational Motion & Moment of Inertia',
+    batchIds: ['batch-1', 'batch-4'],
+    fileType: 'PDF',
+    fileSize: '8.6 MB',
+    uploadedAt: '2024-12-05',
+    downloadCount: 104,
+    url: '#',
+    description: 'Detailed derivations, rolling with slipping, angular momentum conservation proofs.'
+  }
+];
+
+export const INITIAL_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: 'notif-1',
+    title: 'JEE Advanced All India Mock 01 Live Now!',
+    message: 'The full syllabus JEE Advanced Mock 01 is now open for all Super 30 & Target batch candidates. Login to portal and complete before Sunday 8 PM.',
+    priority: 'Urgent',
+    target: 'All Students',
+    createdAt: '2025-01-10 08:30 AM',
+    author: 'Prof. Taterao Kendre (KT Sir)'
+  },
+  {
+    id: 'notif-2',
+    title: 'Sunday Doubt Resolution & Advanced Problem Session',
+    message: 'KT Sir will conduct a 3-hour marathon problem session on Definite Integrals and Differential Equations at Osmanpura branch this Sunday at 9 AM.',
+    priority: 'High',
+    target: 'Selected Batch',
+    batchName: 'JEE Advanced Super 30',
+    createdAt: '2025-01-08 05:00 PM',
+    author: 'Admin Office'
+  },
+  {
+    id: 'notif-3',
+    title: 'MHT-CET Speed Mathematics Formula Booklet Released',
+    message: 'Check the Study Material section for the 2025 MHT-CET revised formula cheat-sheet with speed shortcuts.',
+    priority: 'Normal',
+    target: 'All Students',
+    createdAt: '2025-01-04 11:15 AM',
+    author: 'Prof. Rajesh Patil'
+  }
+];
+
+export const INITIAL_COURSES: Course[] = [
+  {
+    id: 'crs-1',
+    title: 'Complete 2-Year IIT-JEE Mathematics by KT Sir',
+    subtitle: 'Comprehensive program covering Class 11th & 12th Advanced Mathematics from basics to IIT-JEE top 500 rank level.',
+    instructor: 'Prof. Taterao Kendre (KT Sir)',
+    price: 35000,
+    discountedPrice: 24999,
+    duration: '24 Months',
+    features: [
+      'Complete Live + Recorded Lectures by KT Sir',
+      'Daily Practice Problem (DPP) with video solutions',
+      '50+ Full-length CBT Mock Tests',
+      'Weekly 1-on-1 Doubt Clearing sessions',
+      'Hardcopy Study Material delivered to home'
+    ],
+    enrolledCount: 168,
+    category: 'JEE Advanced',
+    status: 'Published'
+  },
+  {
+    id: 'crs-2',
+    title: 'JEE Advanced 2025 Mathematics Rank Booster',
+    subtitle: 'High-intensity problem-solving masterclass targeting 80+ marks in JEE Advanced Mathematics paper.',
+    instructor: 'Prof. Taterao Kendre (KT Sir)',
+    price: 15000,
+    discountedPrice: 9999,
+    duration: '6 Months',
+    features: [
+      '1000+ Previous 20 Years Advanced Question Breakdowns',
+      'King’s rule, Euler tricks, Matrix shortcuts',
+      '20 Full Mock CBT Tests with detailed analytics',
+      'Personal rank projection & weak topic analysis'
+    ],
+    enrolledCount: 124,
+    category: 'JEE Advanced',
+    status: 'Published'
+  },
+  {
+    id: 'crs-3',
+    title: 'MHT-CET Mathematics Fast-Track Masterclass 2025',
+    subtitle: 'Maharashtra CET oriented speed math, 100/100 target batch with time-saving tricks.',
+    instructor: 'Prof. Rajesh Patil & KT Sir',
+    price: 8500,
+    discountedPrice: 5999,
+    duration: '4 Months',
+    features: [
+      'Coverage of Maharashtra State Board 11th & 12th syllabus',
+      'Shortcuts for Coordinate Geometry & Calculus',
+      '25 MHT-CET Pattern Mock Exams',
+      'Chapterwise 2000+ MCQ Bank'
+    ],
+    enrolledCount: 215,
+    category: 'MHT-CET',
+    status: 'Published'
+  }
+];
+
+export const INITIAL_TEST_SERIES: TestSeries[] = [
+  {
+    id: 'ts-1',
+    title: 'All India IIT-JEE Advanced 2025 Test Series (AITS)',
+    subtitle: '25 Full-length Computer Based Tests simulating exact NTA and IIT testing software with National Percentile.',
+    testsCount: 25,
+    price: 4999,
+    discountedPrice: 2999,
+    validity: 'Till JEE Advanced 2025',
+    category: 'IIT-JEE',
+    features: [
+      'Paper 1 & Paper 2 identical exam interface',
+      'Detailed step-by-step mathematical solutions',
+      'Topic-wise strength & weakness heatmap',
+      'Compare performance with Top 30 Super Batch'
+    ],
+    enrolledCount: 340,
+    examIds: ['exam-1', 'exam-2', 'exam-3'],
+    status: 'Active'
+  },
+  {
+    id: 'ts-2',
+    title: 'JEE Main 2025 Full Syllabus Test Series (15 Tests)',
+    subtitle: '15 High-yield mock exams prepared strictly as per NTA syllabus reduction guidelines.',
+    testsCount: 15,
+    price: 2999,
+    discountedPrice: 1999,
+    validity: 'Till April 2025',
+    category: 'IIT-JEE',
+    features: [
+      'Instant result scorecard with All India Rank',
+      'Subject wise cut-off analysis',
+      'Questions framed by KT Sir and senior faculty',
+      'Unlimited re-attempt in review mode'
+    ],
+    enrolledCount: 410,
+    examIds: ['exam-2', 'exam-3'],
+    status: 'Active'
+  },
+  {
+    id: 'ts-3',
+    title: 'MHT-CET Mathematics Exclusive 20 Test Pack',
+    subtitle: 'Dedicated mathematics section practice with 50 questions / 100 marks per mock.',
+    testsCount: 20,
+    price: 1999,
+    discountedPrice: 1299,
+    validity: 'Till CET 2025',
+    category: 'MHT-CET',
+    features: [
+      'Timer based speed improvement system',
+      'State level leaderboard',
+      'Detailed video solutions for tricky questions'
+    ],
+    enrolledCount: 180,
+    examIds: ['exam-4'],
+    status: 'Active'
+  }
+];
+
+export const INITIAL_PAYMENTS: PaymentTransaction[] = [
+  {
+    id: 'pay-1',
+    studentId: 'student-1',
+    studentName: 'Rahul Sharma',
+    studentEmail: 'rahul.sharma@gmail.com',
+    itemName: 'All India IIT-JEE Advanced 2025 Test Series (AITS)',
+    itemType: 'Test Series',
+    amount: 2999,
+    transactionId: 'TXN-UPI-98471203',
+    paymentMode: 'UPI',
+    date: '2025-01-05 14:22',
+    status: 'Verified',
+    receiptNo: 'REC-GMI-2025-001'
+  },
+  {
+    id: 'pay-2',
+    studentId: 'student-2',
+    studentName: 'Priya Patel',
+    studentEmail: 'priya.patel@gmail.com',
+    itemName: 'Complete 2-Year IIT-JEE Mathematics by KT Sir',
+    itemType: 'Course',
+    amount: 24999,
+    transactionId: 'TXN-NB-44810928',
+    paymentMode: 'Netbanking',
+    date: '2025-01-08 10:15',
+    status: 'Verified',
+    receiptNo: 'REC-GMI-2025-002'
+  },
+  {
+    id: 'pay-3',
+    studentId: 'student-3',
+    studentName: 'Amit Kendre',
+    studentEmail: 'amit.kendre@gmail.com',
+    itemName: 'JEE Main 2025 Full Syllabus Test Series',
+    itemType: 'Test Series',
+    amount: 1999,
+    transactionId: 'TXN-CASH-771',
+    paymentMode: 'Cash / Offline',
+    date: '2025-01-10 16:40',
+    status: 'Verified',
+    receiptNo: 'REC-GMI-2025-003'
+  },
+  {
+    id: 'pay-4',
+    studentId: 'student-4',
+    studentName: 'Sneha Kulkarni',
+    studentEmail: 'sneha.kulkarni@yahoo.com',
+    itemName: 'MHT-CET Mathematics Exclusive 20 Test Pack',
+    itemType: 'Test Series',
+    amount: 1299,
+    transactionId: 'TXN-UPI-88410294',
+    paymentMode: 'UPI',
+    date: '2025-01-12 18:30',
+    status: 'Verified',
+    receiptNo: 'REC-GMI-2025-004'
+  }
+];

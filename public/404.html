@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gyansai Maths IIT Center – Test Portal</title>
+    <script>
+      (function() {
+        // Universal SPA router fallback for Vercel, Netlify, and static hosting
+        var path = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+
+        try {
+          var searchParams = new URLSearchParams(search);
+
+          // If visiting /exam/CODE, extract CODE and forward to /?exam=CODE
+          if (path && path.toLowerCase().includes('/exam/')) {
+            var parts = path.split(/\/exam\//i);
+            if (parts[1]) {
+              var examCode = decodeURIComponent(parts[1].split('/')[0].split('?')[0]);
+              if (examCode && !searchParams.has('exam')) {
+                searchParams.set('exam', examCode);
+              }
+            }
+          }
+
+          var newUrl = '/';
+          var queryStr = searchParams.toString();
+          if (queryStr) {
+            newUrl += '?' + queryStr;
+          }
+          if (hash) {
+            newUrl += hash;
+          }
+
+          window.location.replace(newUrl);
+        } catch (e) {
+          window.location.replace('/' + search + hash);
+        }
+      })();
+    </script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background-color: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: #1e3a8a;
+      }
+      .loader {
+        text-align: center;
+      }
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #002fa7;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 12px;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loader">
+      <div class="spinner"></div>
+      <div style="font-weight: 600; font-size: 14px;">Loading Examination Portal...</div>
+      <div style="font-size: 11px; color: #64748b; margin-top: 4px;">Gyansai Maths IIT Center</div>
+    </div>
+  </body>
+</html>
