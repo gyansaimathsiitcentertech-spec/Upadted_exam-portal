@@ -105,20 +105,20 @@ export const AdminDashboard: React.FC = () => {
   // 8. Total Revenue: Strict sum of SUCCESSFUL / VERIFIED payments only
   const totalRevenue = useMemo(() => {
     return payments
-      .filter(p => p.status === 'Verified' || (p.status as any) === 'Success' || (p.status as any) === 'Successful')
+      .filter(p => p.status === 'Verified' || p.status === 'SUCCESS' || (p.status as any) === 'Success' || (p.status as any) === 'Successful')
       .reduce((sum, p) => sum + (p.amount || 0), 0);
   }, [payments]);
 
   // 9. Successful Payments: Count of verified/successful transactions
   const successfulPayments = useMemo(() => {
     return payments.filter(
-      p => p.status === 'Verified' || (p.status as any) === 'Success' || (p.status as any) === 'Successful'
+      p => p.status === 'Verified' || p.status === 'SUCCESS' || (p.status as any) === 'Success' || (p.status as any) === 'Successful'
     ).length;
   }, [payments]);
 
   // 10. Pending Payments: Count of transactions pending confirmation
   const pendingPayments = useMemo(() => {
-    return payments.filter(p => p.status === 'Pending').length;
+    return payments.filter(p => p.status === 'Pending' || p.status === 'PENDING').length;
   }, [payments]);
 
   // =========================================================================
@@ -132,11 +132,12 @@ export const AdminDashboard: React.FC = () => {
     const verifiedPaymentMap: Record<string, { amount: number; count: number }> = {};
 
     payments
-      .filter(p => p.status === 'Verified' || (p.status as any) === 'Success' || (p.status as any) === 'Successful')
+      .filter(p => p.status === 'Verified' || p.status === 'SUCCESS' || (p.status as any) === 'Success' || (p.status as any) === 'Successful')
       .forEach(p => {
-        if (p.date) {
+        const dateVal = p.date || p.submitted;
+        if (dateVal) {
           // Supports YYYY-MM-DD, YYYY-MM-DDTHH:mm:ss, or YYYY-MM-DD HH:mm:ss
-          const dateStr = p.date.split('T')[0].split(' ')[0];
+          const dateStr = dateVal.split('T')[0].split(' ')[0];
           if (dateStr) {
             if (!verifiedPaymentMap[dateStr]) {
               verifiedPaymentMap[dateStr] = { amount: 0, count: 0 };
@@ -729,41 +730,49 @@ export const AdminDashboard: React.FC = () => {
                 No payment transactions recorded.
               </div>
             ) : (
-              payments.slice(0, 2).map(p => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between text-xs bg-gray-50/60 p-2.5 rounded border border-gray-100 hover:border-gray-300 transition"
-                >
-                  <div>
-                    <div className="font-bold text-gray-900 flex items-center space-x-1.5">
-                      <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold flex items-center justify-center">
-                        P
-                      </span>
-                      <span>{p.studentName}</span>
+              payments.slice(0, 4).map(p => {
+                const isVerified = p.status === 'Verified' || p.status === 'SUCCESS' || (p.status as any) === 'Success';
+                const isRejected = p.status === 'REJECTED' || (p.status as any) === 'Failed';
+                return (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between text-xs bg-gray-50/60 p-2.5 rounded border border-gray-100 hover:border-gray-300 transition"
+                  >
+                    <div>
+                      <div className="font-bold text-gray-900 flex items-center space-x-1.5">
+                        <span className={`w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                          isVerified ? 'bg-emerald-100 text-emerald-800' : isRejected ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          ₹
+                        </span>
+                        <span>{p.studentName}</span>
+                      </div>
+                      <div className="text-[11px] font-mono text-gray-400 mt-0.5">
+                        {p.date || p.submitted || 'Recent'} &bull;{' '}
+                        <span className="text-gray-600">
+                          {(p.itemName || p.item || 'Course / Test Series').slice(0, 24)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-[11px] font-mono text-gray-400 mt-0.5">
-                      {p.date} &bull;{' '}
-                      <span className="text-gray-600">
-                        {p.itemName.slice(0, 22)}...
+                    <div className="flex items-center space-x-2">
+                      <span className="font-extrabold text-sm text-gray-900">
+                        ₹{(p.amount || 0).toLocaleString()}
+                      </span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                          isVerified
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : isRejected
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}
+                      >
+                        {p.status}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="font-extrabold text-sm text-gray-900">
-                      ₹{p.amount.toLocaleString()}
-                    </span>
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        p.status === 'Verified'
-                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>

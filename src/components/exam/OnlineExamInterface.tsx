@@ -83,23 +83,26 @@ export const OnlineExamInterface: React.FC = () => {
   const allExamQuestions: Question[] = useMemo(() => {
     if (!exam) return [];
 
-    // Priority 1: Questions explicitly saved on the exam object
-    if (exam.questions && Array.isArray(exam.questions) && exam.questions.length > 0) {
-      return exam.questions as Question[];
-    }
-
-    // Priority 2: Questions referenced by the exam's sections
+    // Priority 1: Questions referenced by the exam's sections, synced with latest Question Bank
     const sectionQuestionIds = (exam.sections && exam.sections.length > 0)
       ? exam.sections.flatMap(s => s.questionIds || [])
       : [];
 
     if (sectionQuestionIds.length > 0) {
       const matched = sectionQuestionIds
-        .map(id => questions.find(q => q.id === id))
+        .map(id => questions.find(q => q.id === id || q.code === id) || exam.questions?.find(q => q.id === id || q.code === id))
         .filter(Boolean) as Question[];
       if (matched.length > 0) {
         return matched;
       }
+    }
+
+    // Priority 2: Questions explicitly saved on the exam object, synced with latest Question Bank
+    if (exam.questions && Array.isArray(exam.questions) && exam.questions.length > 0) {
+      return exam.questions.map(q => {
+        const fromBank = questions.find(bankQ => bankQ.id === q.id || bankQ.code === q.code);
+        return fromBank || q;
+      });
     }
 
     // Priority 3: Filter strictly by exam title & topic keywords
@@ -220,6 +223,7 @@ export const OnlineExamInterface: React.FC = () => {
   const [submittedAttempt, setSubmittedAttempt] = useState<ExamAttempt | null>(null);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'incorrect' | 'unattempted' | 'correct'>('all');
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
+  const [enlargedImageUrl, setEnlargedImageUrl] = useState<string | null>(null);
 
   // Timer countdown
   useEffect(() => {
@@ -1037,10 +1041,9 @@ export const OnlineExamInterface: React.FC = () => {
                         <img
                           src={q.imageUrl}
                           alt={`Question ${questionNumber} diagram`}
-                          onError={e => {
-                            (e.currentTarget as HTMLElement).style.display = 'none';
-                          }}
-                          className="max-h-64 max-w-full rounded border border-slate-300 bg-white p-1 object-contain"
+                          onClick={() => setEnlargedImageUrl(q.imageUrl || null)}
+                          className="max-h-72 max-w-full rounded border border-slate-300 bg-white p-1 object-contain cursor-zoom-in hover:opacity-95 transition"
+                          title="Click to view enlarged full size"
                         />
                       </div>
                     )}
@@ -1286,15 +1289,23 @@ export const OnlineExamInterface: React.FC = () => {
                 </div>
 
                 {currentQuestion.imageUrl && (
-                  <div className="py-2">
-                    <img
-                      src={currentQuestion.imageUrl}
-                      alt="Question diagram"
-                      onError={e => {
-                        (e.currentTarget as HTMLElement).style.display = 'none';
-                      }}
-                      className="max-h-64 max-w-full rounded border border-slate-300 bg-white p-1 object-contain"
-                    />
+                  <div className="py-2.5">
+                    <div className="inline-block border-2 border-slate-300 rounded-lg p-2 bg-white shadow-2xs group relative">
+                      <img
+                        src={currentQuestion.imageUrl}
+                        alt="Question diagram"
+                        onClick={() => setEnlargedImageUrl(currentQuestion.imageUrl || null)}
+                        className="max-h-[460px] w-auto max-w-full rounded cursor-zoom-in object-contain hover:opacity-95 transition"
+                        title="Click to zoom / view full size"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setEnlargedImageUrl(currentQuestion.imageUrl || null)}
+                        className="mt-1.5 text-[11px] font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1 cursor-pointer"
+                      >
+                        <span>🔍 Click image to view enlarged full size</span>
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -1647,6 +1658,48 @@ export const OnlineExamInterface: React.FC = () => {
                 className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded cursor-pointer shadow-xs"
               >
                 Yes, Submit Test Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enlarged Question Image Preview Modal */}
+      {enlargedImageUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4"
+          onClick={() => setEnlargedImageUrl(null)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-2xl max-w-4xl max-h-[90vh] w-full flex flex-col overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="px-5 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+              <span className="font-bold text-slate-800 text-xs uppercase tracking-wide">
+                Enlarged Question Diagram / Formula
+              </span>
+              <button
+                type="button"
+                onClick={() => setEnlargedImageUrl(null)}
+                className="p-1 rounded hover:bg-slate-200 text-slate-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-auto flex items-center justify-center bg-slate-100 flex-1">
+              <img
+                src={enlargedImageUrl}
+                alt="Enlarged diagram"
+                className="max-h-[75vh] w-auto max-w-full rounded border border-slate-300 bg-white p-2 object-contain shadow"
+              />
+            </div>
+            <div className="px-5 py-2.5 bg-white border-t border-slate-200 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setEnlargedImageUrl(null)}
+                className="px-4 py-1.5 bg-[#002FA7] hover:bg-blue-800 text-white rounded font-bold text-xs cursor-pointer"
+              >
+                Close Preview
               </button>
             </div>
           </div>

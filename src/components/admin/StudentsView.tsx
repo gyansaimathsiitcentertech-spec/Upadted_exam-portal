@@ -13,7 +13,8 @@ import {
   Sparkles,
   Download,
   UserCheck,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { User, Batch } from '../../types';
 
@@ -27,6 +28,7 @@ export const StudentsView: React.FC = () => {
   const [editingStudent, setEditingStudent] = useState<User | null>(null);
   const [assignBatchStudent, setAssignBatchStudent] = useState<User | null>(null);
   const [selectedBatchId, setSelectedBatchId] = useState<string>('');
+  const [deleteTargetStudent, setDeleteTargetStudent] = useState<User | null>(null);
 
   const [newName, setNewName] = useState('');
   const [newUsername, setNewUsername] = useState('');
@@ -102,9 +104,7 @@ export const StudentsView: React.FC = () => {
   };
 
   const handleDelete = (student: User) => {
-    if (window.confirm(`Delete student record for "${student.name}"?`)) {
-      deleteUser(student.id);
-    }
+    setDeleteTargetStudent(student);
   };
 
   const handleExportCSV = () => {
@@ -750,6 +750,86 @@ export const StudentsView: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Student Confirmation Modal */}
+      {deleteTargetStudent && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full shadow-2xl border border-gray-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5">
+              <div className="flex items-start space-x-3.5">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-base font-bold text-gray-900">
+                      Delete Student Record
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTargetStudent(null)}
+                      className="text-gray-400 hover:text-gray-600 p-1 rounded-md cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+                    Are you sure you want to permanently delete this student record?
+                  </p>
+
+                  <div className="mt-3 p-3 bg-gray-50 border border-gray-200 rounded text-xs space-y-1 font-mono">
+                    <div>
+                      <span className="text-gray-400">Name:</span> <strong className="text-gray-800 font-sans">{deleteTargetStudent.name}</strong>
+                    </div>
+                    {deleteTargetStudent.rollNo && (
+                      <div>
+                        <span className="text-gray-400">Roll No:</span> <span className="text-gray-700">{deleteTargetStudent.rollNo}</span>
+                      </div>
+                    )}
+                    {deleteTargetStudent.phone && (
+                      <div>
+                        <span className="text-gray-400">Phone:</span> <span className="text-gray-700">{deleteTargetStudent.phone}</span>
+                      </div>
+                    )}
+                    {deleteTargetStudent.collegeName && (
+                      <div>
+                        <span className="text-gray-400">College/School:</span> <span className="text-gray-700 font-sans">{deleteTargetStudent.collegeName}</span>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-gray-400">Class/Exam:</span> <span className="text-gray-700">{deleteTargetStudent.targetExam || 'General'}</span>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-red-600 mt-2 font-medium">
+                    This will remove the student from your active roster and automatically update the Admin Dashboard student count.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="px-5 py-3 bg-gray-50 border-t border-gray-100 flex justify-end items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetStudent(null)}
+                className="px-3 py-1.5 border border-gray-300 text-gray-700 rounded text-xs font-semibold hover:bg-white cursor-pointer transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteUser(deleteTargetStudent.id);
+                  setDeleteTargetStudent(null);
+                }}
+                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded text-xs font-semibold flex items-center space-x-1.5 cursor-pointer shadow-xs transition"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Yes, Delete Student</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -97,7 +97,7 @@ interface PortalContextType {
   deleteTeacher: (id: string) => void;
 
   questions: Question[];
-  addQuestion: (q: Omit<Question, 'id' | 'createdAt'>) => void;
+  addQuestion: (q: Omit<Question, 'id' | 'createdAt'>) => Question;
   updateQuestion: (id: string, data: Partial<Question>) => void;
   deleteQuestion: (id: string) => void;
   importQuestions: (newQuestions: Question[]) => void;
@@ -139,14 +139,31 @@ interface PortalContextType {
   deleteTestSeries: (id: string) => void;
 
   payments: PaymentTransaction[];
+  setPayments: React.Dispatch<React.SetStateAction<PaymentTransaction[]>>;
   addPayment: (p: Omit<PaymentTransaction, 'id' | 'receiptNo' | 'date'>) => PaymentTransaction;
   verifyPayment: (id: string) => void;
+  deletePayment: (id: string) => void;
+  togglePaymentStatus: (id: string, reason?: string) => void;
+  clearRejectedPayments: () => void;
+  resetPaymentsToDefault: () => void;
 
   toasts: ToastInfo[];
   showToast: (message: string, type?: 'success' | 'info' | 'error') => void;
   removeToast: (id: string) => void;
 
   startExamForStudent: (examId: string, studentOverride?: User) => void;
+  registerQuickJoinStudent: (data: {
+    name: string;
+    phone: string;
+    targetClass: string;
+    collegeName: string;
+    rollNo?: string;
+    username?: string;
+    password?: string;
+    examId?: string;
+    examTitle?: string;
+    email?: string;
+  }) => User;
   quickJoinAndStartExam: (
     name: string,
     phone: string,
@@ -207,7 +224,16 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [notifications, setNotifications] = useState<NotificationItem[]>(() => loadFromStorage('notifications', INITIAL_NOTIFICATIONS));
   const [courses, setCourses] = useState<Course[]>(() => loadFromStorage('courses', INITIAL_COURSES));
   const [testSeries, setTestSeries] = useState<TestSeries[]>(() => loadFromStorage('testSeries', INITIAL_TEST_SERIES));
-  const [payments, setPayments] = useState<PaymentTransaction[]>(() => loadFromStorage('payments', INITIAL_PAYMENTS));
+  const [payments, setPayments] = useState<PaymentTransaction[]>(() => {
+    try {
+      const approvals = localStorage.getItem('gyansai_payment_approvals_v1');
+      if (approvals) {
+        const parsed = JSON.parse(approvals);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return loadFromStorage('payments', INITIAL_PAYMENTS);
+  });
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() =>
     loadFromStorage('admin_auth', false)
   );
@@ -517,7 +543,12 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => { saveToStorage('notifications', notifications); }, [notifications]);
   useEffect(() => { saveToStorage('courses', courses); }, [courses]);
   useEffect(() => { saveToStorage('testSeries', testSeries); }, [testSeries]);
-  useEffect(() => { saveToStorage('payments', payments); }, [payments]);
+  useEffect(() => {
+    saveToStorage('payments', payments);
+    try {
+      localStorage.setItem('gyansai_payment_approvals_v1', JSON.stringify(payments));
+    } catch {}
+  }, [payments]);
   useEffect(() => { saveToStorage('admin_auth', isAdminAuthenticated); }, [isAdminAuthenticated]);
 
   // Dynamically sync browser tab favicon with custom logo/favicon
@@ -576,11 +607,19 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const deleteUser = (id: string) => {
     const targetUser = users.find(u => u.id === id);
-    setUsers(prev => prev.filter(u => u.id !== id));
+    setUsers(prev => {
+      const next = prev.filter(u => u.id !== id);
+      saveToStorage('users', next);
+      return next;
+    });
     if (targetUser) {
-      setAttempts(prev => prev.filter(a => a.studentId !== id && a.studentName.toLowerCase() !== targetUser.name.toLowerCase()));
+      setAttempts(prev => {
+        const next = prev.filter(a => a.studentId !== id && a.studentName.toLowerCase() !== targetUser.name.toLowerCase());
+        saveToStorage('attempts', next);
+        return next;
+      });
     }
-    showToast(`Student ${targetUser?.name || ''} and associated exam results deleted.`);
+    showToast(`Student ${targetUser?.name || ''} deleted.`);
   };
 
   const addBatch = (batchData: Omit<Batch, 'id'>) => {
@@ -621,7 +660,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     showToast('Faculty removed.');
   };
 
-  const addQuestion = (qData: Omit<Question, 'id' | 'createdAt'>) => {
+  const addQuestion = (qData: Omit<Question, 'id' | 'createdAt'>): Question => {
     const newQ: Question = {
       ...qData,
       id: 'q-' + Date.now(),
@@ -629,6 +668,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
     setQuestions(prev => [newQ, ...prev]);
     showToast(`Question ${newQ.code} added to Question Bank.`);
+    return newQ;
   };
 
   const updateQuestion = (id: string, data: Partial<Question>) => {
@@ -815,6 +855,43 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     showToast('Payment verified successfully.');
   };
 
+  const deletePayment = (id: string) => {
+    setPayments(prev => prev.filter(p => p.id !== id));
+    showToast('Payment approval record deleted.');
+  };
+
+  const togglePaymentStatus = (id: string, reason?: string) => {
+    setPayments(prev => prev.map(p => {
+      if (p.id === id) {
+        const isVerified = p.status === 'SUCCESS' || p.status === 'Verified' || p.status === 'Success';
+        const nextStatus = isVerified ? 'REJECTED' : 'SUCCESS';
+        return {
+          ...p,
+          status: nextStatus,
+          actionTimestamp: nextStatus === 'SUCCESS' ? '✓ Verified' : '✕ Rejected',
+          actionReason: nextStatus === 'SUCCESS' ? '' : (reason || 'Payment rejected by admin')
+        };
+      }
+      return p;
+    }));
+    showToast('Payment status updated.');
+  };
+
+  const clearRejectedPayments = () => {
+    const rejectedCount = payments.filter(p => p.status === 'REJECTED' || p.status === 'Failed').length;
+    if (rejectedCount === 0) {
+      showToast('No rejected payments to clear.');
+      return;
+    }
+    setPayments(prev => prev.filter(p => p.status !== 'REJECTED' && p.status !== 'Failed'));
+    showToast(`Removed ${rejectedCount} rejected payment record(s).`);
+  };
+
+  const resetPaymentsToDefault = () => {
+    setPayments(INITIAL_PAYMENTS);
+    showToast('Reset payments ledger to default records.');
+  };
+
   const startExamForStudent = (examId: string, studentOverride?: User) => {
     if (studentOverride) {
       setCurrentUser(studentOverride);
@@ -830,6 +907,75 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       window.scrollTo({ top: 0, behavior: 'instant' });
     } catch {}
+  };
+
+  const registerQuickJoinStudent = (data: {
+    name: string;
+    phone: string;
+    targetClass: string;
+    collegeName: string;
+    rollNo?: string;
+    username?: string;
+    password?: string;
+    examId?: string;
+    examTitle?: string;
+    email?: string;
+  }): User => {
+    const cleanPhone = (data.phone || '').trim().replace(/\D/g, '');
+    const cleanName = (data.name || '').trim();
+    const assignedRollNo = data.rollNo?.trim() || `GMI-QJ-${Math.floor(1000 + Math.random() * 9000)}`;
+    const genUsername = data.username?.trim() || `g_${cleanPhone || Date.now().toString().slice(-6)}`;
+    const genEmail = data.email?.trim() || `${cleanPhone || Date.now()}@quickjoin.gyansai.in`;
+    const finalClass = data.targetClass.startsWith('Class') ? data.targetClass : `Class ${data.targetClass}`;
+
+    let student = users.find(u =>
+      (cleanPhone && u.phone && u.phone.replace(/\D/g, '') === cleanPhone) ||
+      (u.username && u.username.toLowerCase() === genUsername.toLowerCase()) ||
+      (genEmail && u.email && u.email.toLowerCase() === genEmail.toLowerCase())
+    );
+
+    if (student) {
+      const updatedData: Partial<User> = {
+        name: cleanName || student.name,
+        phone: cleanPhone || student.phone,
+        collegeName: (data.collegeName || '').trim() || student.collegeName,
+        targetExam: `${finalClass} IIT-JEE / CET`,
+        assignedExamId: data.examId || student.assignedExamId,
+        assignedExamTitle: data.examTitle || student.assignedExamTitle,
+        rollNo: data.rollNo?.trim() || student.rollNo || assignedRollNo,
+        batchName: student.batchName || 'Quick Join Candidate'
+      };
+      const merged: User = { ...student, ...updatedData };
+      setUsers(prev => {
+        const next = prev.map(u => u.id === student!.id ? merged : u);
+        saveToStorage('users', next);
+        return next;
+      });
+      return merged;
+    } else {
+      const newUser: User = {
+        id: 'usr-' + Date.now(),
+        name: cleanName,
+        username: genUsername,
+        password: data.password || 'gyansai123',
+        email: genEmail,
+        phone: cleanPhone,
+        role: 'student',
+        rollNo: assignedRollNo,
+        targetExam: `${finalClass} IIT-JEE / CET`,
+        collegeName: (data.collegeName || '').trim(),
+        batchName: 'Quick Join Candidate',
+        assignedExamId: data.examId,
+        assignedExamTitle: data.examTitle,
+        joinedDate: new Date().toISOString().split('T')[0]
+      };
+      setUsers(prev => {
+        const next = [newUser, ...prev];
+        saveToStorage('users', next);
+        return next;
+      });
+      return newUser;
+    }
   };
 
   const quickJoinAndStartExam = (
@@ -862,7 +1008,6 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       collegeName = '';
     }
 
-    const assignedRollNo = customRollNo.trim() || `GMI-QJ-${Math.floor(1000 + Math.random() * 9000)}`;
     const cleanPhone = phone.trim().replace(/\D/g, '');
 
     // Locate the exact target exam from code or ID first
@@ -871,43 +1016,16 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       (activeExamIdForShare && (e.id.toLowerCase() === activeExamIdForShare.toLowerCase() || e.code.toLowerCase() === activeExamIdForShare.toLowerCase()))
     ) || exams[0];
 
-    const finalTargetClass = targetClass.startsWith('Class') ? targetClass : `Class ${targetClass}`;
-
-    let student = users.find(u =>
-      (cleanPhone && u.phone && u.phone.replace(/\D/g, '') === cleanPhone) ||
-      (email && u.email && u.email.toLowerCase() === email.toLowerCase())
-    );
-
-    if (!student) {
-      student = addUser({
-        name: name.trim(),
-        username: `qj_${cleanPhone || Date.now().toString().slice(-6)}`,
-        email: email || `${cleanPhone || Date.now()}@quickjoin.gyansai.in`,
-        phone: cleanPhone,
-        role: 'student',
-        rollNo: assignedRollNo,
-        targetExam: `${finalTargetClass} IIT-JEE / CET`,
-        collegeName: collegeName.trim(),
-        batchName: 'Quick Join Candidate',
-        assignedExamId: targetExamObj ? targetExamObj.id : undefined,
-        assignedExamTitle: targetExamObj ? targetExamObj.title : undefined,
-        joinedDate: new Date().toISOString().split('T')[0]
-      });
-    } else {
-      const updatedData: Partial<User> = {
-        name: name.trim(),
-        phone: cleanPhone || student.phone,
-        collegeName: collegeName.trim() || student.collegeName,
-        targetExam: `${finalTargetClass} IIT-JEE / CET`,
-        assignedExamId: targetExamObj ? targetExamObj.id : student.assignedExamId,
-        assignedExamTitle: targetExamObj ? targetExamObj.title : student.assignedExamTitle
-      };
-      if (customRollNo.trim()) {
-        updatedData.rollNo = customRollNo.trim();
-      }
-      student = { ...student, ...updatedData };
-      updateUser(student.id, updatedData);
-    }
+    const student = registerQuickJoinStudent({
+      name,
+      phone: cleanPhone,
+      targetClass,
+      collegeName,
+      rollNo: customRollNo,
+      examId: targetExamObj ? targetExamObj.id : undefined,
+      examTitle: targetExamObj ? targetExamObj.title : undefined,
+      email
+    });
 
     setCurrentUser(student);
     setQuickJoinModalOpen(false);
@@ -1059,12 +1177,18 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateTestSeries,
         deleteTestSeries,
         payments,
+        setPayments,
         addPayment,
         verifyPayment,
+        deletePayment,
+        togglePaymentStatus,
+        clearRejectedPayments,
+        resetPaymentsToDefault,
         toasts,
         showToast,
         removeToast,
         startExamForStudent,
+        registerQuickJoinStudent,
         quickJoinAndStartExam,
         resetAllToDefault
       }}

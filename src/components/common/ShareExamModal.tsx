@@ -48,19 +48,29 @@ export const ShareExamModal: React.FC = () => {
   const activeUrl = linkTab === 'smart' ? smartShareUrl : shortSlugUrl;
 
   useEffect(() => {
-    if (smartShareUrl) {
-      QRCode.toDataURL(smartShareUrl, {
+    // QR codes have a strict byte capacity limit (~2KB).
+    // Using shortSlugUrl ensures the QR code is compact, high-contrast, and fast to scan on all mobile cameras without exceeding QR code data limits.
+    const urlForQr = shortSlugUrl || (typeof window !== 'undefined' ? `${window.location.origin}/?exam=${currentExam?.code || currentExam?.id}` : '');
+    if (urlForQr) {
+      QRCode.toDataURL(urlForQr, {
         width: 240,
         margin: 1,
+        errorCorrectionLevel: 'M',
         color: {
           dark: '#002FA7',
           light: '#FFFFFF'
         }
       })
         .then(url => setQrDataUrl(url))
-        .catch(err => console.error('QR code error:', err));
+        .catch(err => {
+          console.warn('QR code generation failed, retrying with minimalist URL:', err);
+          const fallbackUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gyansai-exam-portal.vercel.app';
+          QRCode.toDataURL(fallbackUrl, { width: 240, margin: 1 })
+            .then(url => setQrDataUrl(url))
+            .catch(e => console.error('Fallback QR code failed:', e));
+        });
     }
-  }, [smartShareUrl]);
+  }, [shortSlugUrl, currentExam]);
 
   if (!activeExamIdForShare || !currentExam) return null;
 
@@ -132,9 +142,15 @@ export const ShareExamModal: React.FC = () => {
               </span>
             </div>
             <p className="text-gray-500 font-mono text-[11px] mt-0.5">
-              Folder: {currentExam.folderName || 'Assessments'} &bull; Duration: {currentExam.durationMinutes} mins
+              Folder: {currentExam.folderName || 'Assessments'} &bull; Duration: {currentExam.durationMinutes} mins &bull; <span className={relevantQuestions.length === 0 ? "text-amber-700 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200" : "text-[#002FA7] font-bold"}>{relevantQuestions.length} Questions Assigned</span>
             </p>
           </div>
+
+          {relevantQuestions.length === 0 && (
+            <div className="p-2.5 bg-amber-50 border border-amber-300 rounded text-amber-900 text-[11px] flex items-center justify-between">
+              <span>⚠️ <strong>Notice:</strong> This exam currently has <strong>0 questions</strong> assigned. Candidates will see an empty test. Use <strong>Manage Questions</strong> in Exam Management to add questions.</span>
+            </div>
+          )}
 
           {/* Link Type Tabs */}
           <div className="flex border-b border-gray-200 text-xs">

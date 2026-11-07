@@ -26,6 +26,7 @@ export const SharedExamLanding: React.FC = () => {
     exams,
     activeExamIdForShare,
     setPortalMode,
+    registerQuickJoinStudent,
     quickJoinAndStartExam,
     showToast
   } = usePortal();
@@ -109,13 +110,28 @@ export const SharedExamLanding: React.FC = () => {
     const assignedRoll = rollNumber.trim() || `GMI-QJ-${Math.floor(1000 + Math.random() * 9000)}`;
     const genUsername = `g_${cleanMobile}`;
     const genPassword = 'gyansai123';
+    const targetExamId = currentExam ? currentExam.id : (activeExamIdForShare || exams[0]?.id);
 
-    setCredentials({
+    // Auto-store student registration immediately in students database and sync with dashboard
+    const savedStudent = registerQuickJoinStudent({
+      name: fullName.trim(),
+      phone: cleanMobile,
+      targetClass,
+      collegeName: collegeName.trim(),
+      rollNo: assignedRoll,
       username: genUsername,
       password: genPassword,
-      rollNo: assignedRoll
+      examId: targetExamId,
+      examTitle: currentExam?.title
+    });
+
+    setCredentials({
+      username: savedStudent.username || genUsername,
+      password: genPassword,
+      rollNo: savedStudent.rollNo || assignedRoll
     });
     setStage('credentials');
+    showToast('Student registered! Login credentials generated.');
   };
 
   const handleQuickStartExam = () => {

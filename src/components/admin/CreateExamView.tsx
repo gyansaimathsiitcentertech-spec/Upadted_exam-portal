@@ -14,7 +14,9 @@ import {
   RefreshCw,
   Search,
   Filter,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Sparkles,
+  Plus
 } from 'lucide-react';
 import { ExamSection } from '../../types';
 
@@ -73,6 +75,27 @@ export const CreateExamView: React.FC = () => {
     } else {
       setSelectedQuestionIds(prev => Array.from(new Set([...prev, ...filteredIds])));
     }
+  };
+
+  const handleAutoSelectClass = (cls: string) => {
+    const is12th = cls.includes('12');
+    const math = questions.filter(q => (q.subject || '').toLowerCase() === 'mathematics');
+    let matches = math.filter(q => is12th ? q.tag?.includes('12th') : q.tag?.includes('11th'));
+    if (matches.length === 0) matches = math;
+    const picked = matches.slice(0, 8).map(q => q.id);
+    setSelectedQuestionIds(prev => Array.from(new Set([...prev, ...picked])));
+    showToast(`Selected ${picked.length} Mathematics questions for Class ${cls}.`);
+  };
+
+  const handleAutoSelectTopics = () => {
+    const relevant = questions.filter(q => {
+      const topic = (q.topic || '').toLowerCase();
+      const text = (q.questionText || '').toLowerCase();
+      return topic.includes('integration') || topic.includes('trigonometry') || text.includes('int') || text.includes('sin') || text.includes('cos');
+    });
+    const picked = relevant.map(q => q.id);
+    setSelectedQuestionIds(prev => Array.from(new Set([...prev, ...picked])));
+    showToast(`Selected ${picked.length} Calculus & Trigonometry questions.`);
   };
 
   const totalCalculatedMarks = selectedQuestionIds.length * positiveMarks;
@@ -311,10 +334,30 @@ export const CreateExamView: React.FC = () => {
                 2. Select Dedicated Questions from Question Bank
               </h3>
               <p className="text-[11px] text-slate-500">
-                Selected: <strong className="text-[#002FA7] font-mono">{selectedQuestionIds.length} Questions</strong> &bull; Total Marks: <strong className="text-emerald-700 font-mono">{totalCalculatedMarks} Marks</strong>
+                Selected: <strong className="text-[#002FA7] font-mono text-sm">{selectedQuestionIds.length} Questions</strong> &bull; Total Marks: <strong className="text-emerald-700 font-mono text-sm">{totalCalculatedMarks} Marks</strong>
               </p>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => handleAutoSelectClass(targetClass)}
+                className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#002FA7] border border-blue-200 font-semibold rounded text-[11px] flex items-center space-x-1 cursor-pointer"
+                title={`Auto-select 8 questions for Class ${targetClass}`}
+              >
+                <Sparkles className="w-3 h-3 text-blue-600" />
+                <span>Auto-Pick Class {targetClass} Math (8 Qs)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleAutoSelectTopics}
+                className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-semibold rounded text-[11px] flex items-center space-x-1 cursor-pointer"
+                title="Auto-select Calculus & Trigonometry questions"
+              >
+                <Sparkles className="w-3 h-3 text-indigo-600" />
+                <span>Calculus & Trig</span>
+              </button>
+
               <button
                 type="button"
                 onClick={handleSelectAllFiltered}
@@ -330,7 +373,7 @@ export const CreateExamView: React.FC = () => {
                   onClick={() => setSelectedQuestionIds([])}
                   className="px-2.5 py-1 border border-red-200 text-red-600 hover:bg-red-50 font-semibold rounded text-[11px] cursor-pointer"
                 >
-                  Clear All
+                  Clear
                 </button>
               )}
             </div>
@@ -402,10 +445,35 @@ export const CreateExamView: React.FC = () => {
                       <p className="text-slate-800 font-medium mt-1 leading-snug line-clamp-2">
                         {q.questionText}
                       </p>
+                      {q.imageUrl && (
+                        <div className="pt-1.5">
+                          <img
+                            src={q.imageUrl}
+                            alt="Question diagram"
+                            className="max-h-28 max-w-xs rounded border border-slate-200 bg-white p-1 object-contain"
+                          />
+                        </div>
+                      )}
                     </div>
-                    <span className="text-emerald-700 font-bold text-[11px] shrink-0 font-mono">
-                      +{q.marksPositive}
-                    </span>
+                    <div className="flex items-center space-x-2 shrink-0">
+                      <span className="text-emerald-700 font-bold text-[11px] font-mono">
+                        +{q.marksPositive}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold flex items-center space-x-1 ${
+                        isChecked
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-blue-50 text-[#002FA7] border border-blue-200'
+                      }`}>
+                        {isChecked ? (
+                          <span>✓ Added</span>
+                        ) : (
+                          <>
+                            <Plus className="w-3 h-3 stroke-[3]" />
+                            <span>Add</span>
+                          </>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 );
               })

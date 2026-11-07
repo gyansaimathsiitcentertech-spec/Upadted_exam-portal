@@ -16,6 +16,7 @@ export interface User {
   joinedDate?: string;
   assignedExamId?: string;
   assignedExamTitle?: string;
+  password?: string;
 }
 
 export interface Batch {
@@ -231,17 +232,22 @@ export interface TestSeries {
 
 export interface PaymentTransaction {
   id: string;
-  studentId: string;
+  studentId?: string;
   studentName: string;
   studentEmail: string;
-  itemName: string;
-  itemType: 'Course' | 'Test Series' | 'Institute Tuition Fee';
+  itemName?: string;
+  item?: string;
+  itemType?: 'Course' | 'Test Series' | 'Institute Tuition Fee' | string;
   amount: number;
-  transactionId: string;
-  paymentMode: 'UPI' | 'Netbanking' | 'Cash / Offline' | 'Credit/Debit Card';
-  date: string;
-  status: 'Verified' | 'Pending' | 'Failed';
-  receiptNo: string;
+  transactionId?: string;
+  utr?: string;
+  paymentMode?: 'UPI' | 'Netbanking' | 'Cash / Offline' | 'Credit/Debit Card' | string;
+  date?: string;
+  submitted?: string;
+  status: 'Verified' | 'Pending' | 'Failed' | 'SUCCESS' | 'REJECTED' | string;
+  receiptNo?: string;
+  actionTimestamp?: string;
+  actionReason?: string;
 }
 
 export interface InstituteSettings {
