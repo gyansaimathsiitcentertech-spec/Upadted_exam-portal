@@ -104,6 +104,8 @@ export function generateExamShareUrl(exam: Exam, customQuestions?: Question[], p
       topic: q.topic,
       type: q.type,
       questionText: q.questionText,
+      imageUrl: q.imageUrl,
+      formulaNote: q.formulaNote,
       options: q.options,
       correctAnswer: q.correctAnswer,
       marksPositive: q.marksPositive,
@@ -138,13 +140,22 @@ export function decodeExamFromUrl(): { exam: Exam; customQuestions: Question[] }
       } catch {}
     }
 
-    if (!dataParam) return null;
+    if (!dataParam) {
+      console.log('[EXAM TOKEN PARSER] No encoded exam token found in query or hash parameter.');
+      return null;
+    }
 
     const jsonStr = fromBase64Url(dataParam);
-    if (!jsonStr) return null;
+    if (!jsonStr) {
+      console.warn('[EXAM TOKEN PARSER] Failed to decode base64 string from token.');
+      return null;
+    }
 
     const payload: CompactExamPayload = JSON.parse(jsonStr);
-    if (!payload || !payload.title) return null;
+    if (!payload || !payload.title) {
+      console.warn('[EXAM TOKEN PARSER] Decoded payload is missing title or exam data:', payload);
+      return null;
+    }
 
     const qIds = payload.qIds || [];
     const sections: ExamSection[] = [
@@ -194,6 +205,8 @@ export function decodeExamFromUrl(): { exam: Exam; customQuestions: Question[] }
       type: q.type || 'single_choice',
       difficulty: 'Moderate',
       questionText: q.questionText || '',
+      imageUrl: q.imageUrl,
+      formulaNote: q.formulaNote,
       options: q.options || [],
       correctAnswer: q.correctAnswer || 'A',
       marksPositive: q.marksPositive || 4,
@@ -202,9 +215,18 @@ export function decodeExamFromUrl(): { exam: Exam; customQuestions: Question[] }
       createdAt: new Date().toISOString()
     }));
 
+    console.log('[EXAM TOKEN PARSER] Successfully decoded exam token:', {
+      examId: fullExam.id,
+      examCode: fullExam.code,
+      title: fullExam.title,
+      durationMinutes: fullExam.durationMinutes,
+      questionsCount: customQuestions.length,
+      questionIdsCount: qIds.length
+    });
+
     return { exam: fullExam, customQuestions };
   } catch (err) {
-    console.error('Failed to decode shared exam from URL:', err);
+    console.error('[EXAM TOKEN PARSER] Failed to decode shared exam from URL:', err);
     return null;
   }
 }

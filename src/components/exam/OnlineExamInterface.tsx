@@ -147,6 +147,19 @@ export const OnlineExamInterface: React.FC = () => {
     return mathOnly.slice(0, 10);
   }, [exam, questions]);
 
+  useEffect(() => {
+    if (exam) {
+      console.log('[EXAM IDENTIFIER] OnlineExamInterface initialized strictly for exam:', {
+        examId: exam.id,
+        examCode: exam.code,
+        examTitle: exam.title,
+        questionsCount: allExamQuestions.length,
+        questionIds: allExamQuestions.map(q => q.id),
+        hasCustomQuestions: !!(exam.questions && exam.questions.length > 0)
+      });
+    }
+  }, [exam?.id, allExamQuestions.length]);
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const currentQuestion: Question | undefined = allExamQuestions[currentQuestionIndex];
 
@@ -522,7 +535,7 @@ export const OnlineExamInterface: React.FC = () => {
       const origTitle = document.title;
       const cleanStudentName = (submittedAttempt.studentName || 'Student').replace(/[^a-zA-Z0-9]/g, '_');
       const cleanCode = (submittedAttempt.examCode || 'EXAM').replace(/[^a-zA-Z0-9]/g, '_');
-      document.title = `${cleanStudentName}_${cleanCode}_Official_Answer_Key`;
+      document.title = `${cleanStudentName}_${cleanCode}_Exam_Paper_and_Solutions`;
       window.print();
       setTimeout(() => {
         document.title = origTitle;
@@ -532,77 +545,129 @@ export const OnlineExamInterface: React.FC = () => {
     const handleDownloadOfflineReport = () => {
       const cleanStudent = submittedAttempt.studentName || 'Student';
       const cleanCode = submittedAttempt.examCode || 'CBT';
+      const institute = settings?.instituteName || 'Gyansai Maths IIT Center';
       const htmlDoc = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>${cleanStudent} - ${submittedAttempt.examTitle} Solution Key</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${cleanStudent} - ${submittedAttempt.examTitle} Question Paper & Solutions</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 28px; color: #0f172a; background: #fff; line-height: 1.5; }
-    .header { border-bottom: 2px solid #002FA7; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; margin: 0; padding: 24px; color: #0f172a; background: #fff; line-height: 1.5; }
+    .header { border-bottom: 3px solid #002FA7; padding-bottom: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
     .title { font-size: 22px; font-weight: 800; color: #002FA7; margin: 0; }
-    .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+    .subtitle { font-size: 13px; color: #475569; margin-top: 4px; font-weight: 600; }
+    .candidate-box { text-align: right; font-size: 12px; line-height: 1.6; }
     .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 12px; text-align: center; }
-    .card-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; }
+    .card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; text-align: center; }
+    .card-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
     .card-val { font-size: 20px; font-weight: 800; margin-top: 4px; }
-    .q-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 16px; page-break-inside: avoid; }
-    .q-correct { border-left: 4px solid #10b981; background: #f0fdf4; }
-    .q-incorrect { border-left: 4px solid #ef4444; background: #fef2f2; }
-    .q-unattempted { border-left: 4px solid #94a3b8; background: #f8fafc; }
-    .q-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; margin-bottom: 8px; }
-    .explanation { background: #ffffff; border: 1px solid #e2e8f0; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 12px; }
-    @media print { body { padding: 0; } .q-card { break-inside: avoid; } }
+    .section-title { font-size: 16px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin: 24px 0 16px 0; }
+    .q-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; margin-bottom: 16px; page-break-inside: avoid; break-inside: avoid; }
+    .q-correct { border-left: 5px solid #10b981; background: #f0fdf4; }
+    .q-incorrect { border-left: 5px solid #ef4444; background: #fef2f2; }
+    .q-unattempted { border-left: 5px solid #94a3b8; background: #f8fafc; }
+    .q-header { display: flex; justify-content: space-between; font-weight: 700; font-size: 13px; margin-bottom: 8px; color: #1e293b; }
+    .q-img { max-height: 280px; max-width: 100%; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px; background: #fff; margin: 10px 0; display: block; object-fit: contain; }
+    .formula-note { background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 6px 10px; font-size: 11px; font-family: monospace; color: #92400e; margin: 8px 0; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+    .opt-box { padding: 8px 12px; border-radius: 4px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #cbd5e1; background: #fff; }
+    .opt-key { background: #dcfce7; border-color: #16a34a; font-weight: bold; }
+    .opt-wrong { background: #fee2e2; border-color: #dc2626; }
+    .explanation { background: #ffffff; border: 1px solid #e2e8f0; padding: 12px; border-radius: 4px; margin-top: 10px; font-size: 12px; line-height: 1.6; }
+    .footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b; }
+    @media print {
+      body { padding: 0; }
+      .q-card { page-break-inside: avoid; break-inside: avoid; }
+      .no-print { display: none !important; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <div>
-      <div class="title">${settings?.instituteName || 'Gyansai Maths IIT Center'}</div>
-      <div class="subtitle">Official Assessment Solution Key & Performance Report • ${submittedAttempt.examTitle} (${submittedAttempt.examCode})</div>
+      <div class="title">${institute}</div>
+      <div class="subtitle">Complete Examination Question Paper & Official Solution Key</div>
+      <div style="font-size: 12px; color: #002FA7; font-weight: 700; margin-top: 2px;">
+        Assessment: ${submittedAttempt.examTitle} (${submittedAttempt.examCode})
+      </div>
     </div>
-    <div style="text-align: right; font-size: 12px;">
+    <div class="candidate-box">
       <strong>Candidate:</strong> ${submittedAttempt.studentName}<br/>
-      <strong>Roll No:</strong> ${submittedAttempt.studentRollNo || '—'}<br/>
-      <strong>Submitted:</strong> ${submittedAttempt.submittedAt}
+      <strong>Roll Number:</strong> ${submittedAttempt.studentRollNo || '—'}<br/>
+      <strong>Exam Date:</strong> ${submittedAttempt.submittedAt}
     </div>
   </div>
 
   <div class="grid">
-    <div class="card"><div class="card-label">Score</div><div class="card-val" style="color: #002FA7;">${scoreVal} / ${maxVal}</div></div>
-    <div class="card"><div class="card-label">Accuracy</div><div class="card-val" style="color: #10b981;">${accuracyVal}%</div></div>
-    <div class="card"><div class="card-label">Projected AIR</div><div class="card-val" style="color: #7c3aed;">${projectedAir}</div></div>
-    <div class="card"><div class="card-label">Time Taken</div><div class="card-val" style="color: #d97706;">${timeVal} mins</div></div>
+    <div class="card"><div class="card-label">Score Obtained</div><div class="card-val" style="color: #002FA7;">${scoreVal} / ${maxVal}</div></div>
+    <div class="card"><div class="card-label">Accuracy Rate</div><div class="card-val" style="color: #10b981;">${accuracyVal}%</div></div>
+    <div class="card"><div class="card-label">Projected Rank</div><div class="card-val" style="color: #7c3aed;">${projectedAir}</div></div>
+    <div class="card"><div class="card-label">Time Spent</div><div class="card-val" style="color: #d97706;">${timeVal} mins</div></div>
   </div>
 
-  <h2 style="font-size: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px;">Question-by-Question Detailed Solutions</h2>
+  <div class="section-title">Question-by-Question Question Paper, Diagrams & Step-by-Step Solutions</div>
+
   ${allExamQuestions.map((q, idx) => {
     const ans = submittedAttempt.answers[q.id];
     const isCorrect = ans?.isCorrect;
     const hasAnswered = !!ans?.selectedOption;
     const statusClass = !hasAnswered ? 'q-unattempted' : isCorrect ? 'q-correct' : 'q-incorrect';
-    const statusText = !hasAnswered ? 'Unattempted (0 marks)' : isCorrect ? 'Correct (+4 marks)' : 'Wrong Response (-1 mark)';
+    const statusText = !hasAnswered ? 'Unattempted (0 marks)' : isCorrect ? 'Correct (+4 marks)' : 'Wrong Response (-1 penalty)';
+
+    const imageHtml = q.imageUrl
+      ? `<img src="${q.imageUrl}" alt="Question ${idx + 1} Diagram" class="q-img" />`
+      : '';
+
+    const formulaHtml = q.formulaNote
+      ? `<div class="formula-note"><strong>Formula / Reference:</strong> ${q.formulaNote}</div>`
+      : '';
+
+    const optionsHtml = (q.options && q.options.length > 0)
+      ? `<div class="options-grid">
+          ${q.options.map(opt => {
+            const isOfficialKey = q.correctAnswer === opt.label;
+            const isStudentPick = ans?.selectedOption === opt.label;
+            const boxClass = isOfficialKey ? 'opt-box opt-key' : isStudentPick ? 'opt-box opt-wrong' : 'opt-box';
+            return `<div class="${boxClass}">
+              <span><strong>(${opt.label})</strong> ${opt.text}</span>
+              ${isOfficialKey ? '<strong style="color: #16a34a; font-size: 11px;">✓ Key</strong>' : ''}
+              ${isStudentPick && !isOfficialKey ? '<strong style="color: #dc2626; font-size: 11px;">Your Pick</strong>' : ''}
+            </div>`;
+          }).join('')}
+        </div>`
+      : '';
+
     return `
       <div class="q-card ${statusClass}">
         <div class="q-header">
-          <span>Q${idx + 1}. [${q.code}] ${q.topic || ''}</span>
+          <span>Q${idx + 1}. [${q.code}] ${q.topic || 'Mathematics'} &bull; ${q.subject || 'Mathematics'}</span>
           <span>${statusText}</span>
         </div>
-        <p style="font-size: 13px; margin: 8px 0;">${q.questionText}</p>
-        <div style="font-size: 12px; margin: 8px 0;">
-          <strong>Your Answer:</strong> ${ans?.selectedOption || 'None (Skipped)'} &bull; 
-          <strong>Official Correct Key:</strong> ${q.correctAnswer}
+
+        <p style="font-size: 13px; font-weight: 500; margin: 8px 0; line-height: 1.5;">${q.questionText}</p>
+
+        ${imageHtml}
+        ${formulaHtml}
+        ${optionsHtml}
+
+        <div style="font-size: 12px; margin: 8px 0; padding: 6px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px;">
+          <strong>Candidate Answer:</strong> ${ans?.selectedOption || 'None (Skipped)'} &bull; 
+          <strong style="color: #16a34a;">Official Key:</strong> ${q.correctAnswer} &bull; 
+          <strong>Marks Rule:</strong> +${q.marksPositive || 4} / ${q.marksNegative !== undefined ? q.marksNegative : -1}
         </div>
+
         <div class="explanation">
-          <strong>Step-by-Step Solution:</strong><br/>
-          ${q.explanation || 'No step-by-step solution provided.'}
+          <strong style="color: #002FA7;">Step-by-Step Mathematical Method:</strong><br/>
+          ${q.explanation || 'Apply standard conceptual theorem and formula transformations.'}
         </div>
       </div>
     `;
   }).join('')}
 
-  <div style="margin-top: 32px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #64748b;">
-    Verified Official Assessment Record • Gyansai Maths IIT Center • Eknath Rang Mandir Rd, New Usmanpura, Chhatrapati Sambhajinagar
+  <div class="footer">
+    Verified Official Assessment Record &bull; ${institute} &bull; Comprehensive Mathematics & Science Test Portal
   </div>
 </body>
 </html>`;
@@ -611,7 +676,7 @@ export const OnlineExamInterface: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${cleanStudent.replace(/\s+/g, '_')}_${cleanCode}_AnswerKey.html`;
+      link.download = `${cleanStudent.replace(/\s+/g, '_')}_${cleanCode}_QuestionPaper_Solution.html`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -677,20 +742,20 @@ export const OnlineExamInterface: React.FC = () => {
                 type="button"
                 onClick={handlePrintPdf}
                 className="px-3.5 py-2 bg-[#002FA7] hover:bg-blue-800 text-white rounded text-xs font-semibold cursor-pointer shadow-xs flex items-center space-x-1.5 transition"
-                title="Print or Save as PDF"
+                title="Print or Save Question Paper and Solutions as PDF"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download PDF</span>
+                <span>Download Exam Paper (PDF)</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleDownloadOfflineReport}
                 className="px-3 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 rounded text-xs font-semibold cursor-pointer shadow-2xs flex items-center space-x-1.5 transition"
-                title="Download self-contained offline solution sheet"
+                title="Download complete offline question paper with diagrams and answers"
               >
                 <FileDown className="w-3.5 h-3.5 text-gray-600" />
-                <span>Save Offline</span>
+                <span>Offline Paper & Solutions</span>
               </button>
 
               <button
@@ -966,6 +1031,19 @@ export const OnlineExamInterface: React.FC = () => {
                     <div className="text-slate-900 font-medium text-xs leading-relaxed">
                       <MathText text={q.questionText} />
                     </div>
+
+                    {q.imageUrl && (
+                      <div className="py-2">
+                        <img
+                          src={q.imageUrl}
+                          alt={`Question ${questionNumber} diagram`}
+                          onError={e => {
+                            (e.currentTarget as HTMLElement).style.display = 'none';
+                          }}
+                          className="max-h-64 max-w-full rounded border border-slate-300 bg-white p-1 object-contain"
+                        />
+                      </div>
+                    )}
 
                     {q.formulaNote && (
                       <div className="p-2 bg-amber-50/70 border border-amber-200 rounded text-[11px] text-amber-900 font-mono">

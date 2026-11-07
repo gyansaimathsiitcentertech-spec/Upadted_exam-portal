@@ -346,6 +346,14 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             return [decoded.exam, ...prev];
           });
 
+          console.log('[EXAM IDENTIFIER] Successfully identified exam from decoded URL token:', {
+            examId: decoded.exam.id,
+            examCode: decoded.exam.code,
+            title: decoded.exam.title,
+            questionsLoaded: decoded.customQuestions.length,
+            durationMinutes: decoded.exam.durationMinutes
+          });
+
           setActiveExamIdForShare(decoded.exam.id);
           setPortalModeState('public_exam');
           return;
@@ -387,8 +395,17 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
                  e.code.toLowerCase() === examParam!.toLowerCase()
           );
           if (found) {
+            console.log('[EXAM IDENTIFIER] Matched existing exam in database:', {
+              examId: found.id,
+              examCode: found.code,
+              title: found.title,
+              sectionsCount: found.sections?.length || 0
+            });
             setActiveExamIdForShare(found.id);
           } else {
+            console.log('[EXAM IDENTIFIER] Custom exam slug detected, building dynamic exam paper:', {
+              slug: examParam
+            });
             // Reconstruct exam shell for this code so it never shows incorrect fallback test
             const cleanCode = examParam.trim();
             const dynamicTitle = cleanCode.startsWith('GYAN-')
