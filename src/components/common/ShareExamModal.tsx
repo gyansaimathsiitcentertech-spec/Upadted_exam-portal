@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { usePortal } from '../../context/PortalContext';
-import { Share2, X, Copy, Check, MessageSquare, Mail, QrCode, Sparkles, ExternalLink, Link2, Download } from 'lucide-react';
+import { Share2, X, Copy, Check, MessageSquare, Mail, QrCode, ExternalLink, Download } from 'lucide-react';
 import QRCode from 'qrcode';
-import { generateExamShareUrl } from '../../utils/examShare';
 
 export const ShareExamModal: React.FC = () => {
   const {
@@ -13,9 +12,8 @@ export const ShareExamModal: React.FC = () => {
     showToast
   } = usePortal();
 
-  const [copiedType, setCopiedType] = useState<'smart' | 'short' | null>(null);
+  const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
-  const [linkTab, setLinkTab] = useState<'smart' | 'short'>('smart');
 
   const currentExam = useMemo(() => {
     if (!activeExamIdForShare) return null;
@@ -31,21 +29,13 @@ export const ShareExamModal: React.FC = () => {
     return questions.filter(q => qIds.includes(q.id));
   }, [currentExam, questions]);
 
-  // Complete self-hydrating link that works everywhere
-  const smartShareUrl = useMemo(() => {
+  // Clean, official exam URL (e.g. https://domain/?exam=GYAN-1414)
+  const examShareUrl = useMemo(() => {
     if (!currentExam) return '';
-    return generateExamShareUrl(currentExam, relevantQuestions);
-  }, [currentExam, relevantQuestions]);
-
-  // Clean short slug URL
-  const shortSlugUrl = useMemo(() => {
-    if (!currentExam) return '';
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gyansai-exam-portal.vercel.app';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://gyansaimathsiitcenter.in';
     const slug = encodeURIComponent(currentExam.code || currentExam.id);
     return `${origin}/?exam=${slug}`;
   }, [currentExam]);
-
-  const activeUrl = linkTab === 'smart' ? smartShareUrl : shortSlugUrl;
 
   // Sync exam and questions to server-side endpoint in background so any mobile device can resolve it instantly
   useEffect(() => {
@@ -67,10 +57,8 @@ export const ShareExamModal: React.FC = () => {
   useEffect(() => {
     // Generate an ultra-scannable, high-contrast QR code compliant with ISO/IEC 18004
     // Pure pitch-black (#000000) on pure white (#FFFFFF) with quiet zone margin of 3
-    // ensures instant decoding on all smartphone cameras (Google Lens, iPhone Camera, Android, etc.)
-    const cleanUrl = shortSlugUrl || (typeof window !== 'undefined' ? `${window.location.origin}/?exam=${currentExam?.code || currentExam?.id}` : '');
-    if (cleanUrl) {
-      QRCode.toDataURL(cleanUrl, {
+    if (examShareUrl) {
+      QRCode.toDataURL(examShareUrl, {
         width: 360,
         margin: 3,
         errorCorrectionLevel: 'M',
@@ -82,21 +70,20 @@ export const ShareExamModal: React.FC = () => {
         .then(url => setQrDataUrl(url))
         .catch(err => {
           console.warn('High-res QR code generation failed, retrying standard mode:', err);
-          QRCode.toDataURL(cleanUrl, { width: 300, margin: 2 })
+          QRCode.toDataURL(examShareUrl, { width: 300, margin: 2 })
             .then(url => setQrDataUrl(url))
             .catch(e => console.error('Fallback QR code failed:', e));
         });
     }
-  }, [shortSlugUrl, currentExam]);
+  }, [examShareUrl]);
 
   if (!activeExamIdForShare || !currentExam) return null;
 
-  const handleCopy = (type: 'smart' | 'short') => {
-    const urlToCopy = type === 'smart' ? smartShareUrl : shortSlugUrl;
-    navigator.clipboard.writeText(urlToCopy);
-    setCopiedType(type);
-    showToast(`${type === 'smart' ? 'Unique Smart Exam Link' : 'Short Exam Link'} copied to clipboard!`);
-    setTimeout(() => setCopiedType(null), 2500);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(examShareUrl);
+    setCopied(true);
+    showToast('Exam Link copied to clipboard!');
+    setTimeout(() => setCopied(false), 2500);
   };
 
   const handleWhatsApp = () => {
@@ -105,9 +92,10 @@ export const ShareExamModal: React.FC = () => {
       `📝 *Exam:* ${currentExam.title}\n` +
       `📌 *Code:* ${currentExam.code}\n` +
       `⏱️ *Duration:* ${currentExam.durationMinutes} Minutes\n` +
-      `🏆 *Marking:* +${currentExam.positiveMarks || 4} / ${currentExam.negativeMarks || -1}\n\n` +
-      `👉 *Click to Attempt Test:* ${smartShareUrl}\n\n` +
-      `_No prior app installation needed. Open link directly on any mobile or laptop._`
+      `🏆 *Marking:* +${currentExam.positiveMarks || 4} / ${currentExam.negativeMarks || -1}\n` +
+      `👥 *Class:* ${currentExam.targetClass || '11th'}\n\n` +
+      `👉 *Click to Attempt Test:* ${examShareUrl}\n\n` +
+      `_Open link directly on any mobile or laptop._`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -117,16 +105,17 @@ export const ShareExamModal: React.FC = () => {
     const body = encodeURIComponent(
       `Hello Aspirant,\n\nYou are invited to attempt the following online examination:\n\n` +
       `Exam: ${currentExam.title} (${currentExam.code})\n` +
+      `Class: ${currentExam.targetClass || '11th'}\n` +
       `Duration: ${currentExam.durationMinutes} mins\n` +
       `Total Marks: ${currentExam.totalMarks || 100}\n\n` +
-      `Click this link to start your test immediately:\n${smartShareUrl}\n\n` +
+      `Click this link to start your test immediately:\n${examShareUrl}\n\n` +
       `Best regards,\nGyansai Maths IIT Center`
     );
     window.open(`mailto:?subject=${subject}&body=${body}`);
   };
 
   const handleTestLinkInNewTab = () => {
-    window.open(activeUrl, '_blank');
+    window.open(examShareUrl, '_blank');
   };
 
   const handleDownloadQr = () => {
@@ -190,38 +179,10 @@ export const ShareExamModal: React.FC = () => {
             </div>
           )}
 
-          {/* Link Type Tabs */}
-          <div className="flex border-b border-gray-200 text-xs">
-            <button
-              type="button"
-              onClick={() => setLinkTab('smart')}
-              className={`pb-2 px-3 font-semibold flex items-center space-x-1 cursor-pointer transition ${
-                linkTab === 'smart'
-                  ? 'border-b-2 border-[#002FA7] text-[#002FA7]'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-              <span>Smart Direct Link (Universal)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setLinkTab('short')}
-              className={`pb-2 px-3 font-semibold flex items-center space-x-1 cursor-pointer transition ${
-                linkTab === 'short'
-                  ? 'border-b-2 border-[#002FA7] text-[#002FA7]'
-                  : 'text-gray-500 hover:text-gray-800'
-              }`}
-            >
-              <Link2 className="w-3.5 h-3.5 text-gray-500" />
-              <span>Short Slug Link</span>
-            </button>
-          </div>
-
           {/* URL Box */}
-          <div className="p-3 bg-gray-50 border border-gray-200 rounded-md space-y-1">
+          <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-md space-y-1.5">
             <div className="flex items-center justify-between text-[10px] text-gray-500 font-mono">
-              <span>{linkTab === 'smart' ? 'SELF-HYDRATING PAYLOAD URL' : 'CLEAN SLUG URL'}</span>
+              <span className="font-bold text-gray-700 uppercase">Official Examination Link</span>
               <button
                 type="button"
                 onClick={handleTestLinkInNewTab}
@@ -231,47 +192,38 @@ export const ShareExamModal: React.FC = () => {
                 <ExternalLink className="w-2.5 h-2.5" />
               </button>
             </div>
-            <div className="p-2 bg-white border border-gray-200 rounded font-mono text-[11px] text-gray-800 break-all select-all max-h-20 overflow-y-auto">
-              {activeUrl}
+            <div className="p-2.5 bg-white border border-gray-300 rounded font-mono text-[11px] text-gray-900 break-all select-all shadow-2xs font-semibold">
+              {examShareUrl}
             </div>
           </div>
 
-          {/* 2x2 Action Buttons Grid */}
-          <div className="grid grid-cols-2 gap-2.5 pt-1">
+          {/* Action Buttons Grid (Copy, WhatsApp, Email) */}
+          <div className="grid grid-cols-3 gap-2.5 pt-1">
             <button
               type="button"
-              onClick={() => handleCopy(linkTab)}
-              className="py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold rounded flex items-center justify-center space-x-2 cursor-pointer shadow-2xs transition"
+              onClick={handleCopy}
+              className="py-2.5 px-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold rounded flex items-center justify-center space-x-1.5 cursor-pointer shadow-2xs transition"
             >
-              {copiedType === linkTab ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#002FA7]" />}
-              <span>{copiedType === linkTab ? 'Copied Link!' : 'Copy Link'}</span>
+              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#002FA7]" />}
+              <span>{copied ? 'Copied!' : 'Copy Link'}</span>
             </button>
 
             <button
               type="button"
               onClick={handleWhatsApp}
-              className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded flex items-center justify-center space-x-2 cursor-pointer shadow-2xs transition"
+              className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded flex items-center justify-center space-x-1.5 cursor-pointer shadow-2xs transition"
             >
               <MessageSquare className="w-4 h-4" />
-              <span>WhatsApp Share</span>
+              <span>WhatsApp</span>
             </button>
 
             <button
               type="button"
               onClick={handleEmail}
-              className="py-2.5 px-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold rounded flex items-center justify-center space-x-2 cursor-pointer shadow-2xs transition"
+              className="py-2.5 px-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-800 font-semibold rounded flex items-center justify-center space-x-1.5 cursor-pointer shadow-2xs transition"
             >
               <Mail className="w-4 h-4 text-gray-600" />
-              <span>Email Invite</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleCopy('smart')}
-              className="py-2.5 px-4 bg-blue-50 border border-blue-200 hover:bg-blue-100 text-[#002FA7] font-semibold rounded flex items-center justify-center space-x-2 cursor-pointer shadow-2xs transition"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Copy Smart Link</span>
+              <span>Email</span>
             </button>
           </div>
 
@@ -318,7 +270,7 @@ export const ShareExamModal: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => handleCopy('short')}
+                onClick={handleCopy}
                 className="px-3 py-1.5 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 rounded text-[11px] font-semibold flex items-center space-x-1 cursor-pointer transition"
               >
                 <Copy className="w-3 h-3 text-[#002FA7]" />
