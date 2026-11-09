@@ -65,6 +65,7 @@ export interface Question {
   formulaNote?: string;
   year?: string;
   tag?: string;
+  targetClass?: string; // '11th' | '12th' | 'Both'
   options: QuestionOption[];
   correctAnswer: string; // 'A' or 'A,C' or '12.5'
   marksPositive: number;

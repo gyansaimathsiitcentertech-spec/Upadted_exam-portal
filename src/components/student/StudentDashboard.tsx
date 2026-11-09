@@ -41,10 +41,25 @@ export const StudentDashboard: React.FC = () => {
     : 0;
   const totalCorrect = myAttempts.reduce((sum, a) => sum + (a.correctCount || 0), 0);
 
-  // Real available exams from portal database
+  // Determine student's assigned class
+  const studentClass = useMemo<'11th' | '12th'>(() => {
+    if (!currentUser) return '11th';
+    const text = `${currentUser.targetExam || ''} ${currentUser.batchName || ''}`.toLowerCase();
+    if (text.includes('12') || text.includes('xii')) return '12th';
+    return '11th';
+  }, [currentUser]);
+
+  // Real available exams prioritized for student's class
   const liveExams = useMemo(() => {
-    return exams.filter(e => e.status === 'Live' || e.status === 'Active' || e.isPublic);
-  }, [exams]);
+    const active = exams.filter(e => e.status === 'Live' || e.status === 'Active' || e.isPublic);
+    return [...active].sort((a, b) => {
+      const aMatches = studentClass === '12th' ? (a.targetClass || '').includes('12') : (a.targetClass || '').includes('11');
+      const bMatches = studentClass === '12th' ? (b.targetClass || '').includes('12') : (b.targetClass || '').includes('11');
+      if (aMatches && !bMatches) return -1;
+      if (!aMatches && bMatches) return 1;
+      return 0;
+    });
+  }, [exams, studentClass]);
 
   return (
     <div className="space-y-6 font-sans text-xs">
@@ -150,12 +165,19 @@ export const StudentDashboard: React.FC = () => {
                     className="p-3.5 border border-gray-200 rounded-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-gray-50/60 transition"
                   >
                     <div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 flex-wrap gap-1">
                         <span className="font-bold text-gray-900 text-xs">
                           {ex.title}
                         </span>
                         <span className="px-1.5 py-0.2 font-mono text-[9px] bg-blue-50 text-[#002FA7] border border-blue-200 rounded font-semibold">
                           {ex.code}
+                        </span>
+                        <span className={`px-1.5 py-0.2 font-mono text-[9px] rounded font-bold border ${
+                          (ex.targetClass || '').includes('12')
+                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        }`}>
+                          Class {ex.targetClass || '11th'}
                         </span>
                       </div>
                       <div className="text-[11px] text-gray-500 font-mono mt-1 flex items-center space-x-3">

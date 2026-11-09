@@ -416,6 +416,38 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
 
         if (examParam) {
+          // Attempt cross-device server sync first (retrieves teacher's exact exam and questions on mobile)
+          try {
+            fetch(`/api/sync-exam?code=${encodeURIComponent(examParam)}`)
+              .then(res => res.ok ? res.json() : null)
+              .then(json => {
+                if (json && json.success && json.data) {
+                  const remoteExam: Exam = json.data;
+                  if (remoteExam.questions && remoteExam.questions.length > 0) {
+                    setQuestions(prev => {
+                      const existingIds = new Set(prev.map(q => q.id));
+                      const newOnes = (remoteExam.questions || []).filter((q: any) => !existingIds.has(q.id));
+                      return newOnes.length > 0 ? [...newOnes, ...prev] : prev;
+                    });
+                  }
+                  setExams(prev => {
+                    const idx = prev.findIndex(
+                      e => e.id.toLowerCase() === remoteExam.id.toLowerCase() ||
+                           e.code.toLowerCase() === remoteExam.code.toLowerCase()
+                    );
+                    if (idx >= 0) {
+                      const copy = [...prev];
+                      copy[idx] = { ...copy[idx], ...remoteExam };
+                      return copy;
+                    }
+                    return [remoteExam, ...prev];
+                  });
+                  setActiveExamIdForShare(remoteExam.id);
+                }
+              })
+              .catch(() => {});
+          } catch {}
+
           const found = currentExams.find(
             e => e.id.toLowerCase() === examParam!.toLowerCase() ||
                  e.code.toLowerCase() === examParam!.toLowerCase()
@@ -432,37 +464,37 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             console.log('[EXAM IDENTIFIER] Custom exam slug detected, building dynamic exam paper:', {
               slug: examParam
             });
-            // Reconstruct exam shell for this code so it never shows incorrect fallback test
             const cleanCode = examParam.trim();
+            const paramLower = cleanCode.toLowerCase();
+            const is12th = paramLower.includes('12') || paramLower.includes('xii') || paramLower.includes('calc') || paramLower.includes('integ');
+            const targetClass = is12th ? '12th' : '11th';
+
             const dynamicTitle = cleanCode.startsWith('GYAN-')
-              ? `Gyansai Assessment (${cleanCode})`
+              ? `Gyansai Class ${targetClass} Assessment (${cleanCode})`
               : cleanCode.replace(/[-_]/g, ' ');
-            const titleLower = dynamicTitle.toLowerCase();
-            const relevantForDynamic = currentQuestions.filter(q => {
+
+            // Curate questions strictly matching the target class
+            const classQuestions = currentQuestions.filter(q => {
               const qTopic = (q.topic || '').toLowerCase();
               const qText = (q.questionText || '').toLowerCase();
-              const qSubject = (q.subject || '').toLowerCase();
-              if (qSubject !== 'mathematics') return false;
+              const qTag = (q.tag || '').toLowerCase();
+              const qClass = (q.targetClass || '').toLowerCase();
 
-              if (titleLower.includes('integration') || titleLower.includes('integral') || titleLower.includes('calculus')) {
-                return qTopic.includes('integration') || qTopic.includes('calculus') || qText.includes('integral') || qText.includes('dx');
+              if (targetClass === '11th') {
+                if (qClass === '11th' || qTag.includes('11th')) return true;
+                return qTopic.includes('conic') || qTopic.includes('parabola') || qTopic.includes('vector') ||
+                       qTopic.includes('trig') || qTopic.includes('hyperbola') || qText.includes('circle') ||
+                       qTopic.includes('permutation') || qText.includes('parabola');
+              } else {
+                if (qClass === '12th' || qTag.includes('12th')) return true;
+                return qTopic.includes('integration') || qTopic.includes('calculus') || qTopic.includes('diff') ||
+                       qTopic.includes('matri') || qTopic.includes('determinant') || qTopic.includes('probability') ||
+                       qTopic.includes('area') || qText.includes('integral') || qText.includes('dy/dx');
               }
-              if (titleLower.includes('trigonometry') || titleLower.includes('trig')) {
-                return qTopic.includes('trigonometry') || qText.includes('sin') || qText.includes('cos');
-              }
-              if (titleLower.includes('vector') || titleLower.includes('3d')) {
-                return qTopic.includes('vector') || qTopic.includes('3d');
-              }
-              if (titleLower.includes('diff') || titleLower.includes('derivat')) {
-                return qTopic.includes('diff') || qText.includes('dy/dx');
-              }
-              if (titleLower.includes('conic') || titleLower.includes('parabola') || titleLower.includes('ellipse')) {
-                return qTopic.includes('conic') || qTopic.includes('parabola') || qTopic.includes('ellipse');
-              }
-              return true;
             });
-            const assignedQuestions = (relevantForDynamic.length > 0
-              ? relevantForDynamic
+
+            const assignedQuestions = (classQuestions.length > 0
+              ? classQuestions
               : currentQuestions.filter(q => (q.subject || '').toLowerCase() === 'mathematics')
             ).slice(0, 10);
 
@@ -470,20 +502,20 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               id: cleanCode,
               title: dynamicTitle,
               code: cleanCode,
-              folderId: 'folder-1',
-              folderName: 'Assessment Series',
+              folderId: is12th ? 'folder-12th' : 'folder-11th',
+              folderName: is12th ? 'Class 12th Mathematics' : 'Class 11th Mathematics',
               batchIds: [],
               durationMinutes: 180,
               totalMarks: assignedQuestions.length * 4 || 100,
               positiveMarks: 4,
               negativeMarks: -1,
               passPercentage: 40,
-              targetClass: '11th & 12th',
+              targetClass: targetClass,
               examCategory: 'IIT-JEE / CET',
               sections: [
                 {
                   id: 'sec-1',
-                  name: 'Mathematics Section',
+                  name: `Mathematics Section (Class ${targetClass})`,
                   subject: 'Mathematics',
                   questionIds: assignedQuestions.map(q => q.id),
                   instructions: '+4 for correct answer, -1 for wrong response.'

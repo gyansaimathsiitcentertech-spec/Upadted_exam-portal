@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { usePortal } from '../../context/PortalContext';
 import {
   Clock,
@@ -62,6 +62,15 @@ export const SharedExamLanding: React.FC = () => {
   const [rollNumber, setRollNumber] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auto-sync targetClass whenever currentExam updates (e.g. from decoded URL or server fetch)
+  useEffect(() => {
+    if (currentExam?.targetClass) {
+      if (currentExam.targetClass.includes('12')) setTargetClass('12th');
+      else if (currentExam.targetClass.includes('Repeater')) setTargetClass('Repeater / Dropper');
+      else setTargetClass('11th');
+    }
+  }, [currentExam?.targetClass]);
 
   const questionsCount = useMemo(() => {
     if (currentExam?.questions && currentExam.questions.length > 0) {

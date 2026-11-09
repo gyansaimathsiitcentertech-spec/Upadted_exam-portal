@@ -156,10 +156,22 @@ export const CreateExamView: React.FC = () => {
       passPercentage: Number(passPercentage)
     });
 
+    // Sync exam and questions to server endpoint for instant mobile QR and link resolution
+    try {
+      fetch('/api/sync-exam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...createdExam,
+          questions: selectedQuestionObjects
+        })
+      }).catch(() => {});
+    } catch {}
+
     // Immediately present the unique exam link and share controls
     setActiveExamIdForShare(createdExam.id);
     setActiveAdminTab('Exam Management');
-    showToast(`Examination "${createdExam.title}" created with ${selectedQuestionIds.length} questions.`);
+    showToast(`Examination "${createdExam.title}" created with ${selectedQuestionIds.length} questions for Class ${targetClass}.`);
   };
 
   return (

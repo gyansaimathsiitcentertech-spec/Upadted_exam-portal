@@ -105,49 +105,37 @@ export const OnlineExamInterface: React.FC = () => {
       });
     }
 
-    // Priority 3: Filter strictly by exam title & topic keywords
-    // Never show unrelated questions from the whole bank!
+    // Priority 3: Curate strictly by class assignment (11th vs 12th)
     const titleLower = (exam.title || '').toLowerCase();
+    const is12th = (exam.targetClass || '').includes('12') || titleLower.includes('12') || titleLower.includes('xii') || titleLower.includes('calculus') || titleLower.includes('integral');
+    const examClass = is12th ? '12th' : '11th';
 
-    const topicFiltered = questions.filter(q => {
+    const classMatched = questions.filter(q => {
       const qTopic = (q.topic || '').toLowerCase();
       const qText = (q.questionText || '').toLowerCase();
-      const qSubject = (q.subject || '').toLowerCase();
+      const qTag = (q.tag || '').toLowerCase();
+      const qTarget = (q.targetClass || '').toLowerCase();
 
-      // Must match subject
-      if (qSubject !== 'mathematics' && !titleLower.includes('science') && !titleLower.includes('physics')) {
-        return false;
+      if (examClass === '11th') {
+        if (qTarget === '11th' || qTag.includes('11th')) return true;
+        return qTopic.includes('conic') || qTopic.includes('parabola') || qTopic.includes('vector') ||
+               qTopic.includes('trig') || qTopic.includes('hyperbola') || qText.includes('circle') ||
+               qTopic.includes('permutation') || qText.includes('parabola');
+      } else {
+        if (qTarget === '12th' || qTag.includes('12th')) return true;
+        return qTopic.includes('integration') || qTopic.includes('calculus') || qTopic.includes('diff') ||
+               qTopic.includes('matri') || qTopic.includes('determinant') || qTopic.includes('probability') ||
+               qTopic.includes('area') || qText.includes('integral') || qText.includes('dy/dx');
       }
-
-      if (titleLower.includes('integration') || titleLower.includes('integral') || titleLower.includes('calculus')) {
-        return qTopic.includes('integration') || qTopic.includes('calculus') || qText.includes('integral') || qText.includes('dx');
-      }
-      if (titleLower.includes('trigonometry') || titleLower.includes('trig')) {
-        return qTopic.includes('trigonometry') || qText.includes('sin') || qText.includes('cos') || qText.includes('tan');
-      }
-      if (titleLower.includes('vector') || titleLower.includes('3d')) {
-        return qTopic.includes('vector') || qTopic.includes('3d') || qText.includes('coplanar');
-      }
-      if (titleLower.includes('diff') || titleLower.includes('derivat')) {
-        return qTopic.includes('diff') || qText.includes('dy/dx');
-      }
-      if (titleLower.includes('conic') || titleLower.includes('parabola') || titleLower.includes('ellipse')) {
-        return qTopic.includes('conic') || qTopic.includes('parabola') || qTopic.includes('ellipse');
-      }
-
-      if (exam.targetClass === '11th' && q.tag?.includes('11th')) return true;
-      if (exam.targetClass === '12th' && q.tag?.includes('12th')) return true;
-
-      return false;
     });
 
-    if (topicFiltered.length > 0) {
-      return topicFiltered.slice(0, 10);
+    if (classMatched.length > 0) {
+      return classMatched.slice(0, 10);
     }
 
-    // Strict Fallback: only Mathematics questions, never the whole question bank
+    // Fallback: Return all Mathematics questions
     const mathOnly = questions.filter(q => (q.subject || '').toLowerCase() === 'mathematics');
-    return mathOnly.slice(0, 10);
+    return mathOnly.length > 0 ? mathOnly.slice(0, 10) : questions.slice(0, 10);
   }, [exam, questions]);
 
   useEffect(() => {
@@ -1164,31 +1152,31 @@ export const OnlineExamInterface: React.FC = () => {
   const currentAnswer = currentQuestion ? candidateAnswers[currentQuestion.id] : undefined;
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col select-none">
+    <div className="h-screen h-[100dvh] max-h-screen max-h-[100dvh] bg-slate-100 flex flex-col select-none overflow-hidden font-sans">
       {/* 1. TOP EXAM HEADER */}
-      <header className="h-14 bg-white border-b border-slate-200 px-4 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
-        <div className="flex items-center space-x-3">
+      <header className="h-14 shrink-0 bg-white border-b border-slate-200 px-3 sm:px-4 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
+        <div className="flex items-center space-x-2.5">
           <InstituteLogo
             className="w-8 h-8 rounded"
             imgClassName="max-h-8 max-w-8 object-contain rounded"
             fallbackType="cap"
           />
           <div>
-            <h1 className="font-extrabold text-sm text-slate-900 uppercase tracking-tight truncate max-w-xs sm:max-w-md">
+            <h1 className="font-extrabold text-xs sm:text-sm text-slate-900 uppercase tracking-tight truncate max-w-[160px] sm:max-w-md">
               {exam.title}
             </h1>
-            <p className="text-[10px] text-slate-500 font-semibold uppercase">
-              {settings?.instituteName || 'GYANSAI MATHS IIT CENTER'} &bull; Code: {exam.code}
+            <p className="text-[9px] sm:text-[10px] text-slate-500 font-semibold uppercase truncate max-w-[160px] sm:max-w-none">
+              {exam.code} &bull; Class {exam.targetClass || '11th'}
             </p>
           </div>
         </div>
 
         {/* Center Countdown Clock */}
-        <div className="flex items-center space-x-2 bg-slate-100 border border-slate-300 px-3 py-1 rounded">
-          <Clock className={`w-4 h-4 ${timeRemaining < 300 ? 'text-red-600 animate-pulse' : 'text-slate-600'}`} />
-          <span className="text-[11px] font-bold uppercase text-slate-500 hidden sm:inline">Time Left:</span>
+        <div className="flex items-center space-x-1.5 sm:space-x-2 bg-slate-100 border border-slate-300 px-2 sm:px-3 py-1 rounded">
+          <Clock className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${timeRemaining < 300 ? 'text-red-600 animate-pulse' : 'text-slate-600'}`} />
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase text-slate-500 hidden sm:inline">Time Left:</span>
           <span
-            className={`font-mono text-sm sm:text-base font-extrabold ${
+            className={`font-mono text-xs sm:text-base font-extrabold ${
               timeRemaining < 300 ? 'text-red-600' : 'text-slate-900'
             }`}
           >
@@ -1204,28 +1192,27 @@ export const OnlineExamInterface: React.FC = () => {
               {currentUser.rollNo || 'GMI-CANDIDATE'}
             </div>
           </div>
-          <div className="w-8 h-8 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-xs font-bold uppercase">
+          <div className="w-8 h-8 rounded-full bg-[#1E3A8A] text-white flex items-center justify-center text-xs font-bold uppercase shrink-0">
             {currentUser.name.charAt(0)}
           </div>
         </div>
       </header>
 
       {/* 2. SECTION TABS */}
-      <div className="bg-slate-200/90 border-b border-slate-300 px-4 py-1.5 flex items-center justify-between overflow-x-auto text-xs">
-        <div className="flex items-center space-x-1">
-          <span className="text-[11px] font-bold text-slate-500 uppercase mr-2 hidden md:inline">Sections:</span>
+      <div className="shrink-0 bg-slate-200/90 border-b border-slate-300 px-3 sm:px-4 py-1.5 flex items-center justify-between overflow-x-auto text-xs">
+        <div className="flex items-center space-x-1 shrink-0">
+          <span className="text-[11px] font-bold text-slate-500 uppercase mr-1 hidden md:inline">Sections:</span>
           {(exam?.sections || []).map((sec, idx) => (
             <button
               key={sec.id}
               type="button"
               onClick={() => {
                 setCurrentSectionIndex(idx);
-                // find first question index of this section
                 const firstQId = (sec.questionIds || [])[0];
                 const qIdx = allExamQuestions.findIndex(q => q.id === firstQId);
                 if (qIdx !== -1) handleJumpToQuestion(qIdx);
               }}
-              className={`px-3 py-1 rounded font-semibold text-xs transition cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1 rounded font-semibold text-[11px] sm:text-xs transition cursor-pointer whitespace-nowrap ${
                 currentSectionIndex === idx
                   ? 'bg-[#1E3A8A] text-white shadow-2xs'
                   : 'bg-white/80 hover:bg-white text-slate-700 border border-slate-300'
@@ -1236,7 +1223,7 @@ export const OnlineExamInterface: React.FC = () => {
           ))}
         </div>
 
-        <div className="flex items-center space-x-2 shrink-0 ml-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0 ml-2">
           <div className="text-[11px] text-slate-600 font-semibold hidden lg:block">
             Marking Scheme: <strong className="text-emerald-700">+{exam.positiveMarks}</strong>,{' '}
             <strong className="text-red-600">{exam.negativeMarks}</strong>
@@ -1244,14 +1231,14 @@ export const OnlineExamInterface: React.FC = () => {
           <button
             type="button"
             onClick={() => setMobilePaletteOpen(true)}
-            className="lg:hidden px-2.5 py-1 bg-white border border-slate-300 rounded font-bold text-[11px] text-[#1E3A8A] flex items-center space-x-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            className="lg:hidden px-2.5 py-1 bg-white border border-slate-300 rounded font-bold text-[11px] text-[#1E3A8A] flex items-center space-x-1 shadow-2xs active:scale-95 transition cursor-pointer whitespace-nowrap"
           >
             <span>Palette ({answeredCount}/{allExamQuestions.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setConfirmSubmitModalOpen(true)}
-            className="lg:hidden px-2.5 py-1 bg-emerald-600 text-white rounded font-bold text-[11px] flex items-center space-x-1 shadow-2xs active:scale-95 transition cursor-pointer"
+            className="lg:hidden px-2.5 py-1 bg-emerald-600 text-white rounded font-bold text-[11px] flex items-center space-x-1 shadow-2xs active:scale-95 transition cursor-pointer whitespace-nowrap"
           >
             <Send className="w-3 h-3" />
             <span>Submit</span>
@@ -1260,50 +1247,55 @@ export const OnlineExamInterface: React.FC = () => {
       </div>
 
       {/* 3. MAIN WORKSPACE */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left / Center: Question Panel */}
-        <div className="flex-1 flex flex-col bg-white border-r border-slate-200 overflow-y-auto">
+      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden relative">
+        {/* Left / Center: Question Panel with Pinned Bottom Action Bar */}
+        <div className="flex-1 min-h-0 flex flex-col bg-white border-r border-slate-200 overflow-hidden">
           {currentQuestion ? (
-            <div className="flex-1 p-5 sm:p-7 flex flex-col justify-between">
-              <div className="space-y-4">
+            <div className="flex-1 min-h-0 flex flex-col justify-between overflow-hidden">
+              {/* Scrollable Question Content Area */}
+              <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-7 space-y-4">
                 {/* Question Info Bar */}
-                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-bold text-slate-900 uppercase">
-                      Question No. {currentQuestionIndex + 1}
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                  <div className="flex items-center space-x-2 flex-wrap gap-1">
+                    <span className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase">
+                      Q {currentQuestionIndex + 1} of {allExamQuestions.length}
                     </span>
-                    <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-semibold">
+                    <span className="px-2 py-0.5 rounded bg-blue-50 border border-blue-200 text-[#002FA7] text-[10px] font-bold">
                       {currentQuestion.subject} &bull; {currentQuestion.topic}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-semibold">
+                      Class: {exam.targetClass || '11th'}
                     </span>
                   </div>
 
-                  <div className="flex items-center space-x-3 text-xs font-semibold">
-                    <span className="text-emerald-700">Marks: +{currentQuestion.marksPositive}</span>
-                    <span className="text-red-600">Negative: {currentQuestion.marksNegative}</span>
+                  <div className="flex items-center space-x-2 sm:space-x-3 text-[11px] sm:text-xs font-semibold shrink-0">
+                    <span className="text-emerald-700">+{currentQuestion.marksPositive}</span>
+                    <span className="text-red-600">{currentQuestion.marksNegative}</span>
                   </div>
                 </div>
 
                 {/* Question Text */}
-                <div className="text-sm sm:text-base font-medium text-slate-800 leading-relaxed py-2">
+                <div className="text-sm sm:text-base font-medium text-slate-900 leading-relaxed py-1">
                   <MathText text={currentQuestion.questionText} />
                 </div>
 
+                {/* Responsive Diagram Image with Tap-to-Zoom */}
                 {currentQuestion.imageUrl && (
-                  <div className="py-2.5">
-                    <div className="inline-block border-2 border-slate-300 rounded-lg p-2 bg-white shadow-2xs group relative">
+                  <div className="py-2">
+                    <div className="inline-block border-2 border-slate-300 rounded-lg p-2 bg-white shadow-2xs group relative max-w-full">
                       <img
                         src={currentQuestion.imageUrl}
                         alt="Question diagram"
                         onClick={() => setEnlargedImageUrl(currentQuestion.imageUrl || null)}
-                        className="max-h-[460px] w-auto max-w-full rounded cursor-zoom-in object-contain hover:opacity-95 transition"
-                        title="Click to zoom / view full size"
+                        className="max-h-52 sm:max-h-72 md:max-h-96 w-auto max-w-full rounded cursor-zoom-in object-contain mx-auto hover:opacity-95 transition"
+                        title="Tap to zoom / view full size"
                       />
                       <button
                         type="button"
                         onClick={() => setEnlargedImageUrl(currentQuestion.imageUrl || null)}
                         className="mt-1.5 text-[11px] font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1 cursor-pointer"
                       >
-                        <span>🔍 Click image to view enlarged full size</span>
+                        <span>🔍 Tap diagram to view enlarged full-screen</span>
                       </button>
                     </div>
                   </div>
@@ -1317,7 +1309,7 @@ export const OnlineExamInterface: React.FC = () => {
 
                 {/* Options (SCQ) or Input (Numerical) */}
                 {currentQuestion.type === 'numerical' ? (
-                  <div className="py-4 space-y-2 max-w-sm">
+                  <div className="py-3 space-y-2 max-w-sm">
                     <label className="block text-xs font-bold text-slate-700 uppercase">
                       Enter Numerical Value (Decimals allowed):
                     </label>
@@ -1326,20 +1318,20 @@ export const OnlineExamInterface: React.FC = () => {
                       placeholder="e.g. 128 or 21.33"
                       value={currentAnswer?.selectedOption || ''}
                       onChange={e => handleNumericalInput(e.target.value)}
-                      className="w-full text-base font-mono font-bold px-3 py-2 border border-slate-300 rounded focus:outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
+                      className="w-full text-base font-mono font-bold px-3 py-2.5 border border-slate-300 rounded focus:outline-none focus:border-[#1E3A8A] focus:ring-1 focus:ring-[#1E3A8A]"
                     />
                   </div>
                 ) : (
-                  <div className="space-y-2.5 pt-2">
+                  <div className="space-y-2.5 pt-1">
                     {currentQuestion.options.map(opt => {
                       const isSelected = currentAnswer?.selectedOption === opt.label;
                       return (
                         <div
                           key={opt.id}
                           onClick={() => handleSelectOption(opt.label)}
-                          className={`p-3.5 rounded border text-xs sm:text-sm flex items-center space-x-3 cursor-pointer transition ${
+                          className={`min-h-[46px] p-3 sm:p-3.5 rounded border text-xs sm:text-sm flex items-center space-x-3 cursor-pointer transition select-none ${
                             isSelected
-                              ? 'bg-blue-50/80 border-[#1E3A8A] text-slate-900 font-semibold shadow-2xs'
+                              ? 'bg-blue-50/90 border-[#1E3A8A] ring-1 ring-[#1E3A8A] text-slate-900 font-semibold shadow-2xs'
                               : 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
                           }`}
                         >
@@ -1352,7 +1344,7 @@ export const OnlineExamInterface: React.FC = () => {
                           >
                             {opt.label}
                           </span>
-                          <span className="flex-1">
+                          <span className="flex-1 break-words">
                             <MathText text={opt.text} />
                           </span>
                         </div>
@@ -1362,39 +1354,39 @@ export const OnlineExamInterface: React.FC = () => {
                 )}
               </div>
 
-              {/* Bottom Action Bar */}
-              <div className="pt-6 mt-6 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="flex items-center space-x-2">
+              {/* Pinned Bottom Action Bar for Mobile & Desktop */}
+              <div className="shrink-0 z-10 bg-white/95 backdrop-blur-xs border-t border-slate-200 px-3 py-2.5 sm:px-6 sm:py-3 shadow-md flex items-center justify-between gap-2 text-xs">
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
                   <button
                     type="button"
                     onClick={handleClearResponse}
-                    className="px-3 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded cursor-pointer transition"
+                    className="px-2.5 sm:px-3 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded cursor-pointer transition active:scale-95"
                   >
-                    Clear Response
+                    Clear
                   </button>
                   <button
                     type="button"
                     onClick={handleMarkForReviewAndNext}
-                    className="px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-900 font-semibold rounded cursor-pointer transition"
+                    className="px-2.5 sm:px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-900 font-semibold rounded cursor-pointer transition active:scale-95 truncate max-w-[130px] sm:max-w-none"
                   >
-                    Mark for Review & Next
+                    Review & Next
                   </button>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1.5 sm:space-x-2">
                   <button
                     type="button"
                     onClick={jumpToPrevQuestion}
                     disabled={currentQuestionIndex === 0}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-semibold rounded flex items-center space-x-1 cursor-pointer transition"
+                    className="px-2.5 sm:px-3 py-2 bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-semibold rounded flex items-center space-x-1 cursor-pointer transition active:scale-95"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>Previous</span>
+                    <span className="hidden sm:inline">Previous</span>
                   </button>
                   <button
                     type="button"
                     onClick={handleSaveAndNext}
-                    className="px-5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold rounded shadow-xs flex items-center space-x-1 cursor-pointer transition"
+                    className="px-3.5 sm:px-5 py-2 bg-[#1E3A8A] hover:bg-blue-900 text-white font-bold rounded shadow-xs flex items-center space-x-1 cursor-pointer transition active:scale-95"
                   >
                     <span>Save & Next</span>
                     <ChevronRight className="w-3.5 h-3.5" />

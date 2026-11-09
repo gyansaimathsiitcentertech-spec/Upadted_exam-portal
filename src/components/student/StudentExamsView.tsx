@@ -12,7 +12,16 @@ export const StudentExamsView: React.FC = () => {
   } = usePortal();
 
   const [activeFolderTab, setActiveFolderTab] = useState('All');
+  const [classFilter, setClassFilter] = useState<'my_class' | '11th' | '12th' | 'all'>('my_class');
   const [searchText, setSearchText] = useState('');
+
+  // Determine student's assigned class from their profile
+  const studentClass = useMemo<'11th' | '12th'>(() => {
+    if (!currentUser) return '11th';
+    const text = `${currentUser.targetExam || ''} ${currentUser.batchName || ''}`.toLowerCase();
+    if (text.includes('12') || text.includes('xii')) return '12th';
+    return '11th';
+  }, [currentUser]);
 
   // Student's completed attempts
   const myAttempts = useMemo(() => {
@@ -34,17 +43,49 @@ export const StudentExamsView: React.FC = () => {
     return Array.from(set);
   }, [exams]);
 
+  // Class counts for tabs
+  const count11th = useMemo(() => {
+    return exams.filter(e => {
+      const cls = (e.targetClass || '').toLowerCase();
+      return cls.includes('11') || cls.includes('both') || cls.includes('&') || !e.targetClass;
+    }).length;
+  }, [exams]);
+
+  const count12th = useMemo(() => {
+    return exams.filter(e => {
+      const cls = (e.targetClass || '').toLowerCase();
+      return cls.includes('12') || cls.includes('both') || cls.includes('&');
+    }).length;
+  }, [exams]);
+
   const filteredExams = useMemo(() => {
     return exams.filter(ex => {
+      // 1. Class filter
+      const examClass = (ex.targetClass || '11th').toLowerCase();
+      if (classFilter === 'my_class') {
+        const matchesStudent = studentClass === '12th'
+          ? (examClass.includes('12') || examClass.includes('both') || examClass.includes('&'))
+          : (examClass.includes('11') || examClass.includes('both') || examClass.includes('&') || !ex.targetClass);
+        if (!matchesStudent) return false;
+      } else if (classFilter === '11th') {
+        if (!examClass.includes('11') && !examClass.includes('both') && !examClass.includes('&') && ex.targetClass) return false;
+      } else if (classFilter === '12th') {
+        if (!examClass.includes('12') && !examClass.includes('both') && !examClass.includes('&')) return false;
+      }
+
+      // 2. Folder filter
       const matchFolder = activeFolderTab === 'All' || ex.folderName === activeFolderTab;
+
+      // 3. Search text
       const q = searchText.toLowerCase().trim();
       const matchSearch = !q ||
         ex.title.toLowerCase().includes(q) ||
         ex.code.toLowerCase().includes(q) ||
         (ex.folderName && ex.folderName.toLowerCase().includes(q));
+
       return matchFolder && matchSearch;
     });
-  }, [exams, activeFolderTab, searchText]);
+  }, [exams, classFilter, studentClass, activeFolderTab, searchText]);
 
   const handleStartExam = (examId: string) => {
     startExamForStudent(examId);
@@ -56,13 +97,16 @@ export const StudentExamsView: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="text-xs font-mono font-medium tracking-widest text-[#002FA7] uppercase mb-1">
-            // EXAMINATIONS
+            // EXAMINATIONS CURRICULUM
           </div>
-          <h1 className="text-2xl font-extrabold text-gray-950 tracking-tight">
-            Your Examinations
+          <h1 className="text-2xl font-extrabold text-gray-950 tracking-tight flex items-center space-x-2">
+            <span>Your Examinations</span>
+            <span className="text-xs px-2 py-0.5 rounded bg-blue-50 text-[#002FA7] border border-blue-200 font-mono">
+              Class {studentClass} Enrolled
+            </span>
           </h1>
           <p className="text-xs text-gray-500 font-mono mt-1">
-            {exams.length} official tests available in curriculum &bull; {myAttempts.length} attempted
+            Official papers assigned to your class &bull; {myAttempts.length} attempted
           </p>
         </div>
 
@@ -79,6 +123,64 @@ export const StudentExamsView: React.FC = () => {
         </div>
       </div>
 
+      {/* Class Level Selector Tabs (11th vs 12th) */}
+      <div className="bg-slate-50 border border-slate-200 rounded-lg p-2 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[11px] font-bold text-slate-500 font-mono uppercase mr-1">Class Filter:</span>
+          <button
+            type="button"
+            onClick={() => setClassFilter('my_class')}
+            className={`px-3 py-1.5 rounded text-xs font-bold transition cursor-pointer flex items-center space-x-1 ${
+              classFilter === 'my_class'
+                ? 'bg-[#002FA7] text-white shadow-2xs'
+                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <span>🎯 Assigned to My Class ({studentClass})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter('11th')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer ${
+              classFilter === '11th'
+                ? 'bg-[#002FA7] text-white shadow-2xs'
+                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <span>Class 11th Papers ({count11th})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter('12th')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer ${
+              classFilter === '12th'
+                ? 'bg-[#002FA7] text-white shadow-2xs'
+                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <span>Class 12th Papers ({count12th})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setClassFilter('all')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold transition cursor-pointer ${
+              classFilter === 'all'
+                ? 'bg-[#002FA7] text-white shadow-2xs'
+                : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <span>All Classes ({exams.length})</span>
+          </button>
+        </div>
+
+        <div className="text-[11px] text-slate-500 font-mono hidden md:block">
+          Showing {filteredExams.length} matching test papers
+        </div>
+      </div>
+
       {/* Folder Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 pb-2">
         <button
@@ -86,7 +188,7 @@ export const StudentExamsView: React.FC = () => {
           onClick={() => setActiveFolderTab('All')}
           className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-medium cursor-pointer transition ${
             activeFolderTab === 'All'
-              ? 'bg-[#002FA7] text-white shadow-2xs'
+              ? 'bg-slate-900 text-white shadow-2xs'
               : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
           }`}
         >
@@ -104,7 +206,7 @@ export const StudentExamsView: React.FC = () => {
               onClick={() => setActiveFolderTab(fname)}
               className={`flex items-center space-x-1.5 px-3 py-1.5 rounded text-xs font-medium cursor-pointer transition ${
                 activeFolderTab === fname
-                  ? 'bg-[#002FA7] text-white shadow-2xs'
+                  ? 'bg-slate-900 text-white shadow-2xs'
                   : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
               }`}
             >
@@ -139,9 +241,19 @@ export const StudentExamsView: React.FC = () => {
                       <span className="px-2 py-0.5 bg-blue-50 text-[#002FA7] font-mono text-[10px] font-bold rounded border border-blue-200">
                         {ex.code}
                       </span>
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-700 font-mono text-[10px] rounded border border-gray-200">
-                        {ex.targetClass || '11th & 12th'}
+                      <span className={`px-2 py-0.5 font-mono text-[10px] font-bold rounded border ${
+                        (ex.targetClass || '').includes('12')
+                          ? 'bg-purple-50 text-purple-700 border-purple-200'
+                          : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                      }`}>
+                        Class {ex.targetClass || '11th'}
                       </span>
+                      {((studentClass === '11th' && (ex.targetClass || '').includes('11')) ||
+                        (studentClass === '12th' && (ex.targetClass || '').includes('12'))) && (
+                        <span className="px-1.5 py-0.5 bg-emerald-100/70 text-emerald-800 text-[9px] font-bold rounded hidden sm:inline">
+                          ✓ Your Class
+                        </span>
+                      )}
                     </div>
 
                     <button
@@ -160,7 +272,7 @@ export const StudentExamsView: React.FC = () => {
                       {ex.title}
                     </h3>
                     <p className="text-[11px] text-gray-500 font-mono mt-1">
-                      Folder: {ex.folderName || 'General Mock Tests'}
+                      Target: <span className="font-semibold text-slate-800">Class {ex.targetClass || '11th'}</span> &bull; Folder: {ex.folderName || 'General Mock Tests'}
                     </p>
                   </div>
 

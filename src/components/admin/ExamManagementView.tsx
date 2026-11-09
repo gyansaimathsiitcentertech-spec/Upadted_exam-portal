@@ -413,7 +413,20 @@ export const ExamManagementView: React.FC = () => {
       totalMarks: updatedTotalMarks
     });
 
-    showToast(`Exam "${managingQuestionsExam.title}" synced with ${chosenQuestions.length} questions.`);
+    try {
+      fetch('/api/sync-exam', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...managingQuestionsExam,
+          sections,
+          questions: chosenQuestions,
+          totalMarks: updatedTotalMarks
+        })
+      }).catch(() => {});
+    } catch {}
+
+    showToast(`Exam "${managingQuestionsExam.title}" synced with ${chosenQuestions.length} questions for Class ${managingQuestionsExam.targetClass || '11th'}.`);
     setManagingQuestionsExam(null);
   };
 

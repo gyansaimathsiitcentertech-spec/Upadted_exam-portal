@@ -767,14 +767,22 @@ export const INITIAL_EXAMS: Exam[] = [
     title: 'addi',
     code: 'GYAN-ADDI-01',
     folderId: 'folder-addi',
-    folderName: 'addi (0 questions)',
+    folderName: 'addi (5 questions)',
     batchIds: [],
     targetClass: '11th',
     durationMinutes: 60,
-    totalMarks: 0,
+    totalMarks: 20,
     positiveMarks: 4,
     negativeMarks: -1,
-    sections: [],
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Mathematics Section (Class 11th)',
+        subject: 'Mathematics',
+        questionIds: ['q-math-2019', 'q-2', 'q-8', 'q-math-2022', 'q-5'],
+        instructions: '+4 for correct response, -1 for wrong response.'
+      }
+    ],
     startTime: '2025-01-01T09:00',
     endTime: '2025-12-31T23:59',
     status: 'Live',
@@ -789,17 +797,17 @@ export const INITIAL_EXAMS: Exam[] = [
     title: 'JEE',
     code: 'GYAN-JEE-MAIN-01',
     folderId: 'folder-jee',
-    folderName: 'JEE (0 questions)',
+    folderName: 'JEE (8 questions)',
     batchIds: [],
     targetClass: '11th',
     durationMinutes: 60,
-    totalMarks: 100,
+    totalMarks: 32,
     positiveMarks: 4,
     negativeMarks: -1,
     sections: [
       {
         id: 'sec-1',
-        name: 'Mathematics',
+        name: 'Mathematics Section',
         subject: 'Mathematics',
         questionIds: ['q-math-2019', 'q-math-2021', 'q-math-2022', 'q-1', 'q-2', 'q-3', 'q-4', 'q-5']
       }
@@ -818,14 +826,22 @@ export const INITIAL_EXAMS: Exam[] = [
     title: 'Jee',
     code: 'GYAN-JEE-03',
     folderId: 'folder-jee-3',
-    folderName: 'Jee (0 questions)',
+    folderName: 'Jee (5 questions)',
     batchIds: [],
     targetClass: '11th',
     durationMinutes: 60,
-    totalMarks: 0,
+    totalMarks: 20,
     positiveMarks: 4,
     negativeMarks: -1,
-    sections: [],
+    sections: [
+      {
+        id: 'sec-1',
+        name: 'Mathematics Section (Class 11th)',
+        subject: 'Mathematics',
+        questionIds: ['q-1', 'q-3', 'q-4', 'q-math-2021', 'q-8'],
+        instructions: '+4 for correct response, -1 for wrong response.'
+      }
+    ],
     startTime: '2025-01-01T09:00',
     endTime: '2025-12-31T23:59',
     status: 'Live',
